@@ -1,0 +1,6 @@
+scene.test
+goes through readfile
+create all objects (tri, camera, ambient..etc)
+apply rotations/translaton/scale
+...???
+raytrace
