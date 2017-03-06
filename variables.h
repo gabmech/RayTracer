@@ -13,6 +13,8 @@
 #define EXTERN extern 
 #endif
 
+#include <vector>
+
 EXTERN int amount; // The amount of rotation for each arrow press
 EXTERN vec3 eye; // The (regularly updated) vector coordinates of the eye 
 EXTERN vec3 up;  // The (regularly updated) vector coordinates of the up 
@@ -33,12 +35,18 @@ EXTERN int w, h ;
 EXTERN float fovy ; 
 #endif 
 
+struct vertex {
+	float x;
+	float y;
+	float z;
+};
+
 EXTERN bool useGlu; // Toggle use of "official" opengl/glm transform vs user 
 EXTERN uint vertexshader, fragmentshader, shaderprogram ; // shaders
 EXTERN mat4 projection, modelview; // The mvp matrices
 EXTERN uint projectionPos, modelviewPos; // Uniform locations of the above matrices
 static enum {view, translate, scale} transop ; // which operation to transform 
-enum shape {cube, sphere, teapot} ;
+enum shape {sphere, tri} ;
 EXTERN float sx, sy ; // the scale in x and y 
 EXTERN float tx, ty ; // the translation in x and y
 
@@ -51,10 +59,12 @@ EXTERN int numused ;                     // How many lights are used
 
 // Materials (read from file) 
 // With multiple objects, these are colors for each.
-EXTERN float ambient[4] ; 
-EXTERN float diffuse[4] ; 
-EXTERN float specular[4] ; 
-EXTERN float emission[4] ; 
+EXTERN float ambient[3] ; 
+EXTERN float diffuse[3] ; 
+EXTERN float specular[3] ; 
+EXTERN float emission[3] ; 
+EXTERN float directional[6] ; 
+EXTERN float point[6] ; 
 EXTERN float shininess ; 
 
 // For multiple objects, read from a file.  
@@ -63,12 +73,13 @@ EXTERN int numobjects ;
 EXTERN struct object {
   shape type ; 
   float size ;
-  float ambient[4] ; 
-  float diffuse[4] ; 
-  float specular[4] ;
-  float emission[4] ; 
+  float ambient[3] ; 
+  float diffuse[3] ; 
+  float specular[3] ;
+  float emission[3] ; 
   float shininess ;
   mat4 transform ; 
+  std::vector<vertex> shapeVertices;
 } objects[maxobjects] ;
 
 // Variables to set uniform params for lighting fragment shader 
@@ -81,4 +92,10 @@ EXTERN uint diffusecol ;
 EXTERN uint specularcol ; 
 EXTERN uint emissioncol ; 
 EXTERN uint shininesscol ; 
+
+EXTERN int maxverts;
+EXTERN int numVertices;
+EXTERN std::vector<vertex> vertices;
+
+
 

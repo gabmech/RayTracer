@@ -126,21 +126,21 @@ void readfile(const char* filename)
         // Note that no transforms/stacks are applied to the colors. 
 
         else if (cmd == "ambient") {
-          validinput = readvals(s, 4, values); // colors 
+          validinput = readvals(s, 3, values); // colors 
           if (validinput) {
             for (i = 0; i < 4; i++) {
               ambient[i] = values[i]; 
             }
           }
         } else if (cmd == "diffuse") {
-          validinput = readvals(s, 4, values); 
+          validinput = readvals(s, 3, values); 
           if (validinput) {
             for (i = 0; i < 4; i++) {
               diffuse[i] = values[i]; 
             }
           }
         } else if (cmd == "specular") {
-          validinput = readvals(s, 4, values); 
+          validinput = readvals(s, 3, values); 
           if (validinput) {
             for (i = 0; i < 4; i++) {
               specular[i] = values[i]; 
@@ -163,7 +163,30 @@ void readfile(const char* filename)
           if (validinput) { 
             w = (int) values[0]; h = (int) values[1]; 
           } 
-        } else if (cmd == "camera") {
+        }
+        else if (cmd == "directional")
+        {
+          validinput = readvals(s, 6, values);
+          if (validinput)
+          {
+            for (int i = 0; i < 6; ++i)
+            {
+              directional[i] = values[i];
+            }
+          }
+        }
+        else if (cmd == "point")
+        {
+          validinput = readvals(s, 6, values);
+          if (validinput)
+          {
+            for (int i = 0; i < 6; ++i)
+            {
+              point[i] = values[i];
+            }
+          }
+        }
+        else if (cmd == "camera") {
           validinput = readvals(s,10,values); // 10 values eye cen up fov
           if (validinput) {
 
@@ -183,14 +206,13 @@ void readfile(const char* filename)
         // I've left the code for loading objects in the skeleton, so 
         // you can get a sense of how this works.  
         // Also look at demo.txt to get a sense of why things are done this way.
-        else if (cmd == "sphere" || cmd == "cube" || cmd == "teapot") {
+        else if (cmd == "sphere") {
           if (numobjects == maxobjects) { // No more objects 
             cerr << "Reached Maximum Number of Objects " << numobjects << " Will ignore further objects\n";
           } else {
-            validinput = readvals(s, 1, values); 
+            validinput = readvals(s, 4, values); 
             if (validinput) {
               object * obj = &(objects[numobjects]); 
-              obj->size = values[0]; 
 
               // Set the object's light properties
               for (i = 0; i < 4; i++) {
@@ -204,16 +226,72 @@ void readfile(const char* filename)
               // Set the object's transform
               obj->transform = transfstack.top(); 
 
-              // Set the object's type
-              if (cmd == "sphere") {
-                obj->type = sphere; 
-              } else if (cmd == "cube") {
-                obj->type = cube; 
-              } else if (cmd == "teapot") {
-                obj->type = teapot; 
+              obj->type = sphere; 
+
+              //save the corresponding vertices to this opject
+              for (int i = 0; i < 4; ++i)
+              {
+                obj->shapeVertices.push_back( vertices[ values[i] ] );
               }
             }
             ++numobjects; 
+          }
+        }        else if (cmd == "tri") {
+          if (numobjects == maxobjects) { // No more objects 
+            cerr << "Reached Maximum Number of Objects " << numobjects << " Will ignore further objects\n";
+          } else {
+            validinput = readvals(s, 3, values); 
+            if (validinput) {
+              object * obj = &(objects[numobjects]); 
+
+              // Set the object's light properties
+              for (i = 0; i < 4; i++) {
+                (obj->ambient)[i] = ambient[i]; 
+                (obj->diffuse)[i] = diffuse[i]; 
+                (obj->specular)[i] = specular[i]; 
+                (obj->emission)[i] = emission[i];
+              }
+              obj->shininess = shininess; 
+
+              // Set the object's transform
+              obj->transform = transfstack.top(); 
+
+              obj->type = tri; 
+
+              //save the corresponding vertices to this opject
+              for (int i = 0; i < 3; ++i)
+              {
+                obj->shapeVertices.push_back( vertices[ values[i] ] );
+              }
+            }
+            ++numobjects; 
+          }
+        }
+
+        else if (cmd == "maxverts")
+        { 
+          validinput = readvals(s, 1, values); 
+          if(validinput) maxverts = values[0];
+        }
+
+        else if (cmd == "vertex")
+        {
+          if (numVertices >= maxverts)
+          {
+            cerr << "Reached max num vertices " << numVertices << 
+                    " will ignore further vertices\n";
+          } 
+          else {
+            validinput = readvals(s, 3, values); 
+            if (validinput)
+            {
+              vertex * v = (vertex *)malloc(sizeof(vertex));
+              v->x = values[0];
+              v->y = values[1];
+              v->z = values[2];
+              vertices.push_back(*v);
+            }
+            numVertices++;
           }
         }
 
