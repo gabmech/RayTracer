@@ -34,23 +34,19 @@ void reshape(int width, int height){
   w = width;
   h = height;
 
-  glViewport(0, 0, w, h);
+  //glViewport(0, 0, w, h);
 
   float aspect = (float) w / (float) h, zNear = 0.1, zFar = 99.0 ;
   // I am changing the projection matrix to fit with the new window aspect ratio
-  if (useGlu) projection = glm::perspective(glm::radians(fovy),aspect,zNear,zFar) ; 
-  else {
-	  projection = Transform::perspective(fovy,aspect,zNear,zFar) ;
-  }
-  // Now send the updated projection matrix to the shader
-  glUniformMatrix4fv(projectionPos, 1, GL_FALSE, &projection[0][0]);
+	projection = Transform::perspective(fovy,aspect,zNear,zFar) ;
+  
 }
 
 void saveScreenshot(string fname) {
   int pix = w * h;
   BYTE *pixels = new BYTE[3*pix];	
-  glReadBuffer(GL_FRONT);
-  glReadPixels(0,0,w,h,GL_BGR,GL_UNSIGNED_BYTE, pixels);
+  // glReadBuffer(GL_FRONT);
+  // glReadPixels(0,0,w,h,GL_BGR,GL_UNSIGNED_BYTE, pixels);
 
   FIBITMAP *img = FreeImage_ConvertFromRawBits(pixels, w, h, w * 3, 24, 0xFF0000, 0x00FF00, 0x0000FF, false);
 
@@ -71,7 +67,7 @@ void printHelp() {
     << "press ESC to quit.\n" ;      
 }
 
-
+/*
 void init() {
   // Initialize shaders
   vertexshader = initshaders(GL_VERTEX_SHADER, "shaders/light.vert.glsl") ;
@@ -92,7 +88,7 @@ void init() {
   // Initialize geometric shapes
   initBufferObjects();
   initTeapot(); initCube(); initSphere();
-}
+}*/
 
 int main(int argc, char* argv[]) {
 
@@ -101,33 +97,33 @@ int main(int argc, char* argv[]) {
     exit(-1); 
   }
 
-  FreeImage_Initialise();
-  glutInit(&argc, argv);
+  // FreeImage_Initialise();
+  // glutInit(&argc, argv);
 // OSX systems require an extra window init flag
-#ifdef __APPLE__
+/*#ifdef __APPLE__
   glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 #else
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 #endif
   glutCreateWindow("HW2: Scene Viewer");
-
-#ifndef __APPLE__ // GLew not needed on OSX systems
+*/
+/*#ifndef __APPLE__ // GLew not needed on OSX systems
   GLenum err = glewInit() ; 
   if (GLEW_OK != err) { 
     std::cerr << "Error: " << glewGetString(err) << std::endl; 
   } 
-#endif
+#endif*/
 
-  init();
+  //init();
   readfile(argv[1]) ; 
-  glutDisplayFunc(display);
+/*  glutDisplayFunc(display);
   glutSpecialFunc(specialKey);
   glutKeyboardFunc(keyboard);
   glutReshapeFunc(reshape);
   glutReshapeWindow(w, h);
-
-  if (argc > 2) {
-    allowGrader = true;
+*/
+/*  if (argc > 2) {
+    //allowGrader = true;
     stringstream tcid;
     tcid << argv[1] << "." << argv[2];
     grader.init(tcid.str());
@@ -136,11 +132,11 @@ int main(int argc, char* argv[]) {
     grader.bindSpecialFunc(specialKey);
     grader.bindKeyboardFunc(keyboard);
     grader.bindScreenshotFunc(saveScreenshot);
-  }
+  }*/
 
   printHelp();
-  glutMainLoop();
-  FreeImage_DeInitialise();
-  destroyBufferObjects();
+  //glutMainLoop();
+  //FreeImage_DeInitialise();
+  // destroyBufferObjects();
   return 0;
 }

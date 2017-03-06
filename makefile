@@ -15,9 +15,8 @@ endif
 
 RM = /bin/rm -f 
 all: transforms
-transforms: main.o shaders.o Transform.o readfile.o display.o variables.h readfile.h shaders.h Transform.h grader.o UCSD/grader.h \
-	   Geometry.o
-	$(CC) $(CFLAGS) -o transforms shaders.o main.o Transform.o Geometry.o readfile.o display.o grader.o $(INCFLAGS) $(LDFLAGS) 
+transforms: main.o Transform.o readfile.o variables.h readfile.h Transform.h 
+	$(CC) $(CFLAGS) -o transforms main.o Transform.o readfile.o $(INCFLAGS) $(LDFLAGS) 
 main.o: main.cpp Transform.h variables.h
 	$(CC) $(CFLAGS) $(INCFLAGS) -c main.cpp
 readfile.o: readfile.cpp readfile.h variables.h 

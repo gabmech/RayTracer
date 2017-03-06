@@ -42,7 +42,7 @@ using namespace std;
 // here for convenience
 
 // The function below applies the appropriate transform to a 4-vector
-void matransform(stack<mat4> &transfstack, GLfloat* values) 
+void matransform(stack<mat4> &transfstack, float* values) 
 {
   mat4 transform = transfstack.top(); 
   vec4 valvec = vec4(values[0],values[1],values[2],values[3]); 
@@ -58,7 +58,7 @@ void rightmultiply(const mat4 & M, stack<mat4> &transfstack)
 
 // Function to read the input data values
 // Use is optional, but should be very helpful in parsing.  
-bool readvals(stringstream &s, const int numvals, GLfloat* values) 
+bool readvals(stringstream &s, const int numvals, float* values) 
 {
   for (int i = 0; i < numvals; i++) {
     s >> values[i]; 
@@ -90,7 +90,7 @@ void readfile(const char* filename)
         stringstream s(str);
         s >> cmd; 
         int i; 
-        GLfloat values[10]; // Position and color for light, colors for others
+        float values[10]; // Position and color for light, colors for others
         // Up to 10 params for cameras.  
         bool validinput; // Validity of input 
 
@@ -287,9 +287,7 @@ void readfile(const char* filename)
     amount = amountinit;
     sx = sy = 1.0;  // keyboard controlled scales in x and y 
     tx = ty = 0.0;  // keyboard controllled translation in x and y  
-    useGlu = false; // don't use the glu perspective/lookat fns
 
-    glEnable(GL_DEPTH_TEST);
   } else {
     cerr << "Unable to Open Input Data File " << filename << "\n"; 
     throw 2; 
