@@ -11,19 +11,13 @@
 #include <sstream>
 #include <deque>
 #include <stack>
-#ifdef __APPLE__
-#include <OpenGL/gl3.h>
-#include <OpenGL/glext.h>
-#include <GLUT/glut.h>
-#else
-#include <GL/glew.h>
-#include <GL/glut.h>
-#endif
-#include "shaders.h"
+
+
+
+
 #include "Transform.h"
 #include <FreeImage.h>
-#include "UCSD/grader.h"
-#include "Geometry.h"
+
 
 using namespace std; 
 
@@ -33,7 +27,6 @@ using namespace std;
 #include "readfile.h" // prototypes for readfile.cpp  
 void display(void);  // prototype for display function.  
 
-Grader grader;
 bool allowGrader = false;
 
 // Reshapes the window
