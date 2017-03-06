@@ -282,10 +282,7 @@ void readfile(const char* filename)
             validinput = readvals(s, 3, values); 
             if (validinput)
             {
-              vertex * v = (vertex *)malloc(sizeof(vertex));
-              v->x = values[0];
-              v->y = values[1];
-              v->z = values[2];
+              vec4 * v = new vec4( values[0], values[1], values[2], 1);
               vertices.push_back(*v);
             }
             numVertices++;

@@ -35,12 +35,6 @@ EXTERN int w, h ;
 EXTERN float fovy ; 
 #endif 
 
-struct vertex {
-	float x;
-	float y;
-	float z;
-};
-
 EXTERN bool useGlu; // Toggle use of "official" opengl/glm transform vs user 
 EXTERN uint vertexshader, fragmentshader, shaderprogram ; // shaders
 EXTERN mat4 projection, modelview; // The mvp matrices
@@ -79,23 +73,12 @@ EXTERN struct object {
   float emission[3] ; 
   float shininess ;
   mat4 transform ; 
-  std::vector<vertex> shapeVertices;
+  std::vector<vec4> shapeVertices;
 } objects[maxobjects] ;
-
-// Variables to set uniform params for lighting fragment shader 
-EXTERN uint lightcol ; 
-EXTERN uint lightpos ; 
-EXTERN uint numusedcol ; 
-EXTERN uint enablelighting ; 
-EXTERN uint ambientcol ; 
-EXTERN uint diffusecol ; 
-EXTERN uint specularcol ; 
-EXTERN uint emissioncol ; 
-EXTERN uint shininesscol ; 
 
 EXTERN int maxverts;
 EXTERN int numVertices;
-EXTERN std::vector<vertex> vertices;
+EXTERN std::vector<vec4> vertices;
 
 
 

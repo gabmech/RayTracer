@@ -15,6 +15,21 @@ using namespace std ;
 #include "display.h"
 
 
+class Ray {
+    vec3 p0, p1;
+  public:
+    Ray (vec3,vec3);
+};
+
+Ray::Ray(vec3 start_point, vec3 direction) {
+	p0 = start_point;
+	p1 = direction;
+}
+
+bool intersect(Ray);
+
+
+
 // New helper transformation function to transform vector by modelview 
 // May be better done using newer glm functionality.
 // Provided for your convenience.  Use is optional.  
@@ -40,37 +55,76 @@ void transformvec (const float input[4], float output[4])
 */
 void display() {
 
-	modelview = Transform::lookAt(eye,center,up); 
+	//modelview = Transform::lookAt(eye,center,up); 
 
 	// Transformations for objects, involving translation and scaling 
 	mat4 sc(1.0) , tr(1.0), transf(1.0); 
 	sc = Transform::scale(sx,sy,1.0); 
 	tr = Transform::translate(tx,ty,0.0); 
 
+	// transformation applied
 	transf = tr * sc;
-
-	mat4 prevTransf = modelview * transf;
 
 	//apply transformation to each vertex in object
   	for (int i = 0 ; i < numobjects ; i++) {
 
     	object* obj = &(objects[i]); // Grabs an object struct.
 
-
-
+    	//apply object transform to each vertex
+    	for (int i = 0; i < obj->shapeVertices.size(); ++i)
+    	{
+    		obj->shapeVertices[i] = obj->shapeVertices[i] * obj->transform;
+    	}
     }
-
 }
 
+/*
+	questions:
+		- how do we draw the image?
+			freeImage
+		- what is the camera (eye?)
+			up, eye, and center vectors to construct cam... still not sure
+*/
 
+void rayTrace() {
+	//Image img(w, h);
+	// camera, scene, width, height
+	for (int i = 0; i < h; ++i)
+	{
+		for (int j = 0; j < w; ++j)
+		{
+			bool hit;
+			vec3 pixel(i, j, 0);
+			vec3 camera(0, 0, -1);
+			Ray ray(camera, pixel);
+			if (intersect(ray))
+			{
+				//img[i][j] = GREEN;
+			} 
+			else {
+				//img[i][j] = BLACK;
+			}
 
+		}
+	}
+}
 
-
-
-
-
-
-
+bool intersect(Ray ray) {
+	for (int i = 0; i < numobjects; ++i)
+	{
+		object obj = objects[i];
+		if (obj.type == tri)
+		{
+			
+		} 
+		else if (obj.type == sphere)
+		{
+			
+		} else {
+			cerr << "Incorrect way to tell which type of object it is while intersecting in display.cpp\n";
+		}
+	}
+}
 
 
 
