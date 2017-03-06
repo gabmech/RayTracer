@@ -2,32 +2,26 @@
 /* This is the program skeleton for homework 2 in CSE167 by Ravi Ramamoorthi  */
 /* Extends HW 1 to deal with shading, more transforms and multiple objects    */
 /******************************************************************************/
-
-// You shouldn't have to edit this file at all!
-
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <deque>
 #include <stack>
-
-
-
-
-#include "Transform.h"
 #include <FreeImage.h>
-
 
 using namespace std; 
 
 // Main variables in the program.  
 #define MAINPROGRAM 
+#include "Transform.h"
 #include "variables.h" 
 #include "readfile.h" // prototypes for readfile.cpp  
-void display(void);  // prototype for display function.  
+#include "display.h"
+
 
 bool allowGrader = false;
+
 
 // Reshapes the window
 void reshape(int width, int height){
@@ -64,7 +58,7 @@ void printHelp() {
     << "press 'g' to switch between using glm::lookAt and glm::Perspective or your own LookAt.\n"       
     << "press 'r' to reset the transformations.\n"
     << "press 'v' 't' 's' to do view [default], translate, scale.\n"
-    << "press ESC to quit.\n" ;      
+    << "press ESC to quit.\n\n" ;      
 }
 
 /*
@@ -97,7 +91,7 @@ int main(int argc, char* argv[]) {
     exit(-1); 
   }
 
-  // FreeImage_Initialise();
+  FreeImage_Initialise();
   // glutInit(&argc, argv);
 // OSX systems require an extra window init flag
 /*#ifdef __APPLE__
@@ -116,6 +110,8 @@ int main(int argc, char* argv[]) {
 
   //init();
   readfile(argv[1]) ; 
+
+  display();
 /*  glutDisplayFunc(display);
   glutSpecialFunc(specialKey);
   glutKeyboardFunc(keyboard);
@@ -136,7 +132,7 @@ int main(int argc, char* argv[]) {
 
   printHelp();
   //glutMainLoop();
-  //FreeImage_DeInitialise();
+  FreeImage_DeInitialise();
   // destroyBufferObjects();
   return 0;
 }
