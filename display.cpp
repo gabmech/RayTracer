@@ -71,11 +71,11 @@ void display() {
     }
 
     // construct camera
-    vec3 camera(0,0,-1);
+	vec3 w = glm::normalize(eye-center);               // eye
+	vec3 u = glm::normalize(glm::cross(up, w)); // direction from eye to center
+	vec3 v = glm::cross(w, u);                  // up direction
 
-
-
-    rayTrace(camera);
+    rayTrace(v);
 }
 
 /*
@@ -142,12 +142,25 @@ bool intersect(Ray ray) {
 			vec3 A = vec3(obj.shapeVertices[1].x, obj.shapeVertices[1].y, obj.shapeVertices[1].z),
 				 C = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z), 
 				 B = vec3(obj.shapeVertices[2].x, obj.shapeVertices[2].y, obj.shapeVertices[2].z );
+
 			//calculate normal and normalize it
 			vec3 cross = glm::cross( (C-A), (B-A));
-			vec3 n = glm::normalize(glm::cross( (C-A), (B-A)));
+			vec3 n = glm::normalize( cross );
+
 			//use normal in plane equation
+			float t = (glm::dot(A, n) - glm::dot(ray.p0, n)) / (glm::dot(ray.p1, n));
+			vec3 P = ray.p0 + ray.p1 * t;
 
 			//combine ray and plane equation
+			float plane = glm::dot(P, n) - glm::dot(A, n);
+			if (plane==0)
+			{	
+				return 0;
+			}
+
+			//see if point inside triangle
+			
+
 		} 
 		else if (obj.type == sphere)
 		{

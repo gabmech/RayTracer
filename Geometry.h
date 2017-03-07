@@ -7,8 +7,8 @@ typedef glm::vec3 vec3 ;
 
 
 class Ray {
-    vec3 p0, p1;
   public:
+    vec3 p0, p1;
     Ray (vec3,vec3);
 };
 
