@@ -15,14 +15,17 @@ endif
 
 RM = /bin/rm -f 
 all: transforms
-transforms: main.o Transform.o readfile.o display.o variables.h readfile.h Transform.h display.h
-	$(CC) $(CFLAGS) -o transforms main.o Transform.o readfile.o display.o $(INCFLAGS) $(LDFLAGS) 
+transforms: main.o Transform.o readfile.o display.o Geometry.o variables.h \
+			readfile.h Transform.h display.h Geometry.h
+	$(CC) $(CFLAGS) -o transforms main.o Transform.o readfile.o display.o geometry.o $(INCFLAGS) $(LDFLAGS) 
 main.o: main.cpp Transform.h variables.h display.h
 	$(CC) $(CFLAGS) $(INCFLAGS) -c main.cpp
 readfile.o: readfile.cpp readfile.h variables.h 
 	$(CC) $(CFLAGS) $(INCFLAGS) -c readfile.cpp
 Transform.o: Transform.cpp Transform.h 
 	$(CC) $(CFLAGS) $(INCFLAGS) -c Transform.cpp  
+Geometry.o: Geometry.cpp Geometry.h Transform.o
+	$(CC) $(CFLAGS) $(INCFLAGS) -c Geometry.cpp  
 display.o: display.cpp display.h
 	$(CC) $(CFLAGS) $(INCFLAGS) -c display.cpp
 clean: 

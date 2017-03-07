@@ -58,9 +58,9 @@ void Transform::up(float degrees, vec3& eye, vec3& up)
 mat4 Transform::lookAt(const vec3 &eye, const vec3 &center, const vec3 &up) 
 {
   //copied from hw1
-  vec3 w = glm::normalize(eye);
-  vec3 u = glm::normalize(glm::cross(up, w)); //perpendicular to up and eye
-  vec3 v = glm::cross(w, u); // perpendicular to u and w
+  vec3 w = glm::normalize(eye);               // eye
+  vec3 u = glm::normalize(glm::cross(up, w)); // direction from eye to center
+  vec3 v = glm::cross(w, u);                  // up direction
 
   //transform into 4x4 with extra column for transformation and extra row for w.
   mat4 rot = mat4(u.x, v.x, w.x, 0, u.y, v.y, w.y, 0, u.z, v.z, w.z, 0, 0, 0, 0, 1);

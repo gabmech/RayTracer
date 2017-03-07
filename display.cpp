@@ -10,23 +10,16 @@
 #include "Transform.h"
 
 using namespace std ; 
+#include "FreeImage.h"
 #include "variables.h"
 #include "readfile.h"
 #include "display.h"
+#include "Geometry.h"
 
 
-class Ray {
-    vec3 p0, p1;
-  public:
-    Ray (vec3,vec3);
-};
-
-Ray::Ray(vec3 start_point, vec3 direction) {
-	p0 = start_point;
-	p1 = direction;
-}
 
 bool intersect(Ray);
+void rayTrace(vec3);
 
 
 
@@ -76,6 +69,13 @@ void display() {
     		obj->shapeVertices[i] = obj->shapeVertices[i] * obj->transform;
     	}
     }
+
+    // construct camera
+    vec3 camera(0,0,-1);
+
+
+
+    rayTrace(camera);
 }
 
 /*
@@ -86,27 +86,50 @@ void display() {
 			up, eye, and center vectors to construct cam... still not sure
 */
 
-void rayTrace() {
-	//Image img(w, h);
+void rayTrace(vec3 camera) {
+
+	FreeImage_Initialise();
+	FIBITMAP* bitmap = FreeImage_Allocate(w, h, 24);
+
+	//memory allocation check
+	if(!bitmap){
+		cout << "Can't allocate image???" << endl; 
+		exit(1);
+	}
+
 	// camera, scene, width, height
 	for (int i = 0; i < h; ++i)
 	{
 		for (int j = 0; j < w; ++j)
 		{
 			bool hit;
+			RGBQUAD color;
+
 			vec3 pixel(i, j, 0);
 			vec3 camera(0, 0, -1);
-			Ray ray(camera, pixel);
+			vec3 direction = camera - pixel;
+			Ray ray(camera, direction);		/** TODO: Alter ray class constructor to do direction **/
+
 			if (intersect(ray))
 			{
-				//img[i][j] = GREEN;
+				color.rgbRed = 0.0;
+				color.rgbGreen = (double) 255.0;
+				color.rgbBlue = (double) h /255.0 * j ;
+				FreeImage_SetPixelColor(bitmap, i, j, &color);			
 			} 
 			else {
-				//img[i][j] = BLACK;
+				color.rgbRed = 0.0;
+				color.rgbGreen = 0.0;
+				color.rgbBlue = 0.0;
+				FreeImage_SetPixelColor(bitmap, i, j, &color);			
 			}
 
 		}
 	}
+	if(FreeImage_Save(FIF_PNG, bitmap, "test11.png", 0)){
+		cout << "Image successfully saved" << endl;
+	}
+	FreeImage_DeInitialise();
 }
 
 bool intersect(Ray ray) {
@@ -115,7 +138,16 @@ bool intersect(Ray ray) {
 		object obj = objects[i];
 		if (obj.type == tri)
 		{
-			
+			//define variables for easier understanding
+			vec3 A = vec3(obj.shapeVertices[1].x, obj.shapeVertices[1].y, obj.shapeVertices[1].z),
+				 C = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z), 
+				 B = vec3(obj.shapeVertices[2].x, obj.shapeVertices[2].y, obj.shapeVertices[2].z );
+			//calculate normal and normalize it
+			vec3 cross = glm::cross( (C-A), (B-A));
+			vec3 n = glm::normalize(glm::cross( (C-A), (B-A)));
+			//use normal in plane equation
+
+			//combine ray and plane equation
 		} 
 		else if (obj.type == sphere)
 		{
@@ -124,6 +156,7 @@ bool intersect(Ray ray) {
 			cerr << "Incorrect way to tell which type of object it is while intersecting in display.cpp\n";
 		}
 	}
+	return 1;
 }
 
 

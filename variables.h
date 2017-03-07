@@ -36,9 +36,7 @@ EXTERN float fovy ;
 #endif 
 
 EXTERN bool useGlu; // Toggle use of "official" opengl/glm transform vs user 
-EXTERN uint vertexshader, fragmentshader, shaderprogram ; // shaders
 EXTERN mat4 projection, modelview; // The mvp matrices
-EXTERN uint projectionPos, modelviewPos; // Uniform locations of the above matrices
 static enum {view, translate, scale} transop ; // which operation to transform 
 enum shape {sphere, tri} ;
 EXTERN float sx, sy ; // the scale in x and y 
