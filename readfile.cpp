@@ -196,7 +196,8 @@ void readfile(const char* filename)
             center = vec3(values[3], values[4], values[5]);
             vec3 axis = vec3(values[6], values[7], values[8]);
             upinit = Transform::upvector(axis, eyeinit);
-            fovy = values[9];
+            fovy = values[9] / 57.2958; // convert to radians
+
           }
         }
 

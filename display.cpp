@@ -67,7 +67,7 @@ void display() {
     	//apply object transform to each vertex
     	for (int i = 0; i < obj->shapeVertices.size(); ++i)
     	{
-    		obj->shapeVertices[i] = obj->shapeVertices[i] * obj->transform;
+    		obj->shapeVertices[i] = obj->transform * obj->shapeVertices[i];
     	}
     }
 
@@ -99,6 +99,7 @@ void rayTrace(vec3 camera) {
 	}
 
 	// camera, scene, width, height
+	cout << w << "; " << h;
 	for (int i = 0; i < h; ++i)
 	{
 		for (int j = 0; j < w; ++j)
@@ -107,24 +108,25 @@ void rayTrace(vec3 camera) {
 			RGBQUAD color;
 
 			vec3 pixel(i, j, 0);
-			vec3 camera(0, 0, 1);
+			vec3 camera(0, 0, -1);
 			vec3 direction = camera - pixel;
 			Ray ray(camera, direction);		/** TODO: Alter ray class constructor to do direction **/
 
-			if (/*intersect(ray, i, j)*/drawSquare(i, j))
+			// if (drawSquare(i, j))
+			if(intersect(ray, i, j))
 			{
+
 				color.rgbRed = 0.0;
-				color.rgbGreen = (double) 255.0;
-				color.rgbBlue = (double) h /255.0 * j ;
-				FreeImage_SetPixelColor(bitmap, i, j, &color);			
+				color.rgbGreen = (double) 255.0 * j/w;
+				color.rgbBlue = (double)  255.0 * j/w;
+				FreeImage_SetPixelColor(bitmap, j, i, &color);			
 			} 
 			else {
 				color.rgbRed = 0.0;
 				color.rgbGreen = 0.0;
 				color.rgbBlue = 0.0;
-				FreeImage_SetPixelColor(bitmap, i, j, &color);			
+				FreeImage_SetPixelColor(bitmap, j, i, &color);			
 			}
-
 		}
 	}
 	if(FreeImage_Save(FIF_PNG, bitmap, "test11.png", 0)){
@@ -160,29 +162,38 @@ bool intersect(Ray ray, int i, int j) {
 			float t = (glm::dot(A, n) - glm::dot(ray.p0, n)) / (glm::dot(ray.p1, n));
 			vec3 P = ray.p0 + ray.p1 * t;
 
-			//combine ray and plane equation
-			float plane = glm::dot(P, n) - glm::dot(B, n);
-			//ray and plane are parallel
-			if (plane==0) {	
-				cerr << "intersection of ray and plane in display.cpp::intersect is 0\n";
-				return 0;
-			}
+			// //combine ray and plane equation
+			// float plane = glm::dot(P, n) - glm::dot(A, n);
+			// //ray and plane are parallel
 
+			// if (plane == 0) {	
+			// 	//cerr << "intersection of ray and plane in display.cpp::intersect is 0\n";
+			// 	cout << "P is: " << P[0] << " " << P[1] << " " << P[2] << endl;
+			// 	cout << "n is: " << n[0] << " " << n[1] << " " << n[2] << endl;
+			// 	cout << "A is: " << A[0] << " " << A[1] << " " << A[2] << endl;
+			// 	cout << "T is: " << t << endl;
+			// 	return 0;
+			// }
+			// return 1;
 			// ---[ see if point inside triangle ]-----------
 
 			//find weights
+			
 			float fovx = 2 * (atan(tan(fovy/2) * (float)w/h));
 			float alpha = tan(fovx/2) * (((float)j-w/2)/((float)w/2));
 			float beta = tan(fovy/2) * ((h/2-i)/(h/2));
 			float gamma = 1-beta-alpha;
 
-			if (alpha < 0 || beta < 0 || gamma < 0 || beta > 1 || gamma > 1 || beta+gamma > 1)
+			// cout << "ALpha is " << alpha << endl;
+			// cout << "Beta is " << beta << endl;
+			// cout << "Gamma is " << gamma << endl;
+
+			if (alpha < 0 || alpha > 1 || beta < 0  || beta > 1|| gamma < 0 || gamma > 1 || beta+gamma > 1)
 			{
-				cerr << "ray intersected plane but not inside triangle\n";
+				//cerr << "ray intersected plane but not inside triangle\n";
 				return 0;
 			}
-
-			cerr << "ray intersects plane\n";
+			// cerr << "ray intersects plane inside triange\n" << i;
 			return 1;
 			
 
