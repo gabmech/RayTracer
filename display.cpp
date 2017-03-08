@@ -18,8 +18,9 @@ using namespace std ;
 
 
 
-bool intersect(Ray);
+bool intersect(Ray, int, int);
 void rayTrace(vec3);
+bool drawSquare(int, int);
 
 
 
@@ -71,7 +72,7 @@ void display() {
     }
 
     // construct camera
-	vec3 w = glm::normalize(eye-center);               // eye
+	vec3 w = glm::normalize(eye-center);        // eye
 	vec3 u = glm::normalize(glm::cross(up, w)); // direction from eye to center
 	vec3 v = glm::cross(w, u);                  // up direction
 
@@ -106,11 +107,11 @@ void rayTrace(vec3 camera) {
 			RGBQUAD color;
 
 			vec3 pixel(i, j, 0);
-			vec3 camera(0, 0, -1);
+			vec3 camera(0, 0, 1);
 			vec3 direction = camera - pixel;
 			Ray ray(camera, direction);		/** TODO: Alter ray class constructor to do direction **/
 
-			if (intersect(ray))
+			if (/*intersect(ray, i, j)*/drawSquare(i, j))
 			{
 				color.rgbRed = 0.0;
 				color.rgbGreen = (double) 255.0;
@@ -132,7 +133,15 @@ void rayTrace(vec3 camera) {
 	FreeImage_DeInitialise();
 }
 
-bool intersect(Ray ray) {
+bool drawSquare(int i, int j) {
+	if (i>(w/3) && i<2*(w/3) && j>(h/3) && j<2*(h/3))
+	{
+		return 1;
+	}
+	return 0;
+}
+
+bool intersect(Ray ray, int i, int j) {
 	for (int i = 0; i < numobjects; ++i)
 	{
 		object obj = objects[i];
@@ -152,13 +161,29 @@ bool intersect(Ray ray) {
 			vec3 P = ray.p0 + ray.p1 * t;
 
 			//combine ray and plane equation
-			float plane = glm::dot(P, n) - glm::dot(A, n);
-			if (plane==0)
-			{	
+			float plane = glm::dot(P, n) - glm::dot(B, n);
+			//ray and plane are parallel
+			if (plane==0) {	
+				cerr << "intersection of ray and plane in display.cpp::intersect is 0\n";
 				return 0;
 			}
 
-			//see if point inside triangle
+			// ---[ see if point inside triangle ]-----------
+
+			//find weights
+			float fovx = 2 * (atan(tan(fovy/2) * (float)w/h));
+			float alpha = tan(fovx/2) * (((float)j-w/2)/((float)w/2));
+			float beta = tan(fovy/2) * ((h/2-i)/(h/2));
+			float gamma = 1-beta-alpha;
+
+			if (alpha < 0 || beta < 0 || gamma < 0 || beta > 1 || gamma > 1 || beta+gamma > 1)
+			{
+				cerr << "ray intersected plane but not inside triangle\n";
+				return 0;
+			}
+
+			cerr << "ray intersects plane\n";
+			return 1;
 			
 
 		} 

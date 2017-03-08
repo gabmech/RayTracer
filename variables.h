@@ -26,6 +26,7 @@ vec3 center(0.0,0.0,0.0) ; // Center look at point
 int amountinit = 5;
 int w = 500, h = 500 ; // width and height 
 float fovy = 90.0 ; // For field of view
+float fovx = 90.0 ; // For field of view
 #else 
 EXTERN vec3 eyeinit ; 
 EXTERN vec3 upinit ; 
