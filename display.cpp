@@ -114,19 +114,25 @@ void rayTrace(vec3 camera) {
 			float alpha = tan(fovx/2) * (((float)x-w/2)/((float)w/2));
 			float beta = tan(fovy/2) * ((h/2-y)/(h/2));
 			
+			 	cerr << _w.x << _w.y << _w.z << endl;
+			 	cerr << center.x << center.y << center.z << endl;
+			 	cerr << eye.x << eye.y << eye.z << endl;
+
 			//calculate ray equation in world coordinates NEW from Office Hours
 			vec3 direction = vec3( alpha*_u + beta*_v - _w );
 			direction = glm::normalize(direction);
 			Ray ray(camera, direction);	
 
-/*			if (x == w/2 && y == h/2)
-			{
-				cerr << direction.x << " " << direction.y << " " << direction.z << endl;
-				cerr << "intersection: " << intersect(ray) << endl;
+			// if (x == w/2 && y == h/2)
+			// {
+			// 	cerr << _w.x << _w.y << _w.z << endl;
+			// 	cerr << "Direction: " << direction.x << " " << direction.y << " " << direction.z << endl;
+			// 	int a1 = intersect(ray);
+			// 	cerr << "intersection: " << a1 << endl;
 
-			} else {
-				continue;
-			}*/
+			// } else {
+			// 	continue;
+			// }
 
 			//find out if ray intersects object geometry
 			if(intersect(ray))
@@ -161,6 +167,8 @@ bool intersect(Ray ray) {
 	vec3 AP, BP, CP, P, cross, n, A, B, C;
 	float Aw, Bw, Cw, alpha, beta, gamma, t;
 
+	cerr << "NUMO: " << numobjects << endl;
+
 	//check against each object geometry
 	for (int ind = 0; ind < numobjects; ++ind)
 	{
@@ -172,6 +180,8 @@ bool intersect(Ray ray) {
 			A = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z);
 			B = vec3(obj.shapeVertices[1].x, obj.shapeVertices[1].y, obj.shapeVertices[1].z );
 			C = vec3(obj.shapeVertices[2].x, obj.shapeVertices[2].y, obj.shapeVertices[2].z); 
+
+			cerr << "triangle: " << ind+1 << endl;
 
 			//calculate normal and normalize it
 			cross = glm::cross( (C-A), (B-A));
@@ -194,16 +204,15 @@ bool intersect(Ray ray) {
 			beta = glm::dot(BP, P) + Bw;
 			gamma = glm::dot(CP, P) + Cw;
 
-			//if intersection, weights all greater than 0
-			if (alpha < 0 || beta < 0 || gamma < 0 || alpha > 1 || beta > 1 || gamma > 1 ){
-				//cerr << "MISS! ray intersected plane outside of triangle\n";
-				return 0;
+			cerr << alpha << " " << beta << " " << gamma << endl;
+
+			//if intersection, weights all between 0 and 1
+			if (alpha >= 0 && beta >= 0 && gamma >= 0 && alpha <= 1 && beta <= 1 && gamma <= 1 ){
+				cerr << "Intersected triangle " << ind+1 << ". HIT!!!" << endl;
+				return 1;
 			}
-
-			//cerr << "HIT! ray intersects plane inside triange" <<  endl;
-			return 1;
+			cerr << "didn't intersect triangle " << ind+1 << endl;
 			
-
 		} 
 		else if (obj.type == sphere)
 		{
