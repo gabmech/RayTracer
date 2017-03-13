@@ -62,25 +62,30 @@ void display() {
 	transf = tr * sc;
 
 	//apply transformation to each vertex in object
-  	for (int i = 0 ; i < numobjects ; i++) {
+  	// for (int i = 0 ; i < numobjects ; i++) {
 
-    	object* obj = &(objects[i]); // Grabs an object struct.
+   //  	object* obj = &(objects[i]); // Grabs an object struct.
 
-    	//apply object transform to each vertex
-    	for (int i = 0; i < obj->shapeVertices.size(); ++i)
-    	{
-    		obj->shapeVertices[i] = obj->transform * obj->shapeVertices[i];
-    	}
-    }
+   //  	//apply object transform to each vertex
+   //  	for (int i = 0; i < obj->shapeVertices.size(); ++i)
+   //  	{
+   //  		obj->shapeVertices[i] = obj->transform * obj->shapeVertices[i];
+   //  	}
+   //  }
 
     // construct camera
+    eye = vec3(0,0,4);
+    center = vec3(0,0,0);
+    up=vec3(0,1,0);
+    fovy = 30/57.2958;
 	_w = glm::normalize(eye-center);        // eye
 	_u = glm::normalize(glm::cross(up, _w)); // direction from eye to center
 	_v = glm::cross(_w, _u);                  // up direction
 
-	vec3 camera(0, 0, -1);
-
-    rayTrace(camera	);
+	//vec3 camera(0, 0, -1);
+	cerr << "eye: " << eye.z << endl;
+	vec3 camera = vec3 (eye);
+    rayTrace(camera);
 }
 
 /*
@@ -102,7 +107,7 @@ void rayTrace(vec3 camera) {
 		exit(1);
 	}
 
-	// camera, scene, width, height
+	// shoot a ray through every pixel on the image
 	for (int x = 0; x < w; ++x)
 	{
 		for (int y = 0; y < h; ++y)
@@ -110,20 +115,31 @@ void rayTrace(vec3 camera) {
 			bool hit;
 			RGBQUAD color;
 
+			//generate weights
 			float fovx = 2 * (atan(tan(fovy/2) * (float)w/h));
 			float alpha = tan(fovx/2) * (((float)x-w/2)/((float)w/2));
 			float beta = tan(fovy/2) * ((h/2-y)/(h/2));
-			float gamma = 1-beta-alpha;
-
-			vec3 direction = vec3( alpha*_u + beta*_v -_w );
+			
+		
+			//calculate ray equation in world coordinates NEW from Office Hours
+			vec3 direction = vec3( alpha*_u + beta*_v - _w );
 			direction = glm::normalize(direction);
-
 			Ray ray(camera, direction);	
 
-			// if (drawSquare(i, j))
+			//cerr << "camera: " << camera.z << endl;
+
+			if (x == w/2 && y == h/2)
+			{
+				cerr << direction.x << " " << direction.y << " " << direction.z << endl;
+				cerr << "intersection: " << intersect(ray, x, y) << endl;
+
+			} else {
+				continue;
+			}
+
+			//find out if ray intersects object geometry
 			if(intersect(ray, x, y))
 			{
-
 				color.rgbRed = 0.0;
 				color.rgbGreen = (double) 255.0 * x/w;
 				color.rgbBlue = (double)  255.0 * x/w;
@@ -138,17 +154,23 @@ void rayTrace(vec3 camera) {
 		}
 	}
 
+
+
+	//draw image
 	if(FreeImage_Save(FIF_PNG, bitmap, "test11.png", 0)){
 		cout << "Image successfully saved" << endl;
 	}
+	//housekeeping
 	FreeImage_DeInitialise();
 }
 
-
+//determine whether the ray through pixel x, y intersects geometry
 bool intersect(Ray ray, int x, int y) {
+	//check against each object geometry
 	for (int ind = 0; ind < numobjects; ++ind)
 	{
 		object obj = objects[ind];
+		//triangles
 		if (obj.type == tri)
 		{
 			//define variables for easier understanding
@@ -164,7 +186,8 @@ bool intersect(Ray ray, int x, int y) {
 			float t = (glm::dot(A, n) - glm::dot(ray.p0, n)) / (glm::dot(ray.p1, n));
 			vec3 P = ray.p0 + ray.p1 * t;
 
-
+			cerr << "t: " << t << " An: " << glm::dot(A, n) << " p0,n: " << glm::dot(ray.p0, n) << " p1,n: " << glm::dot(ray.p1, n) << endl;
+			cerr << "p0: " << ray.p0.x << ray.p0.y << ray.p0.z << " P: " << P.x << P.y << P.z << endl;
 			//find weights			
 			float fovx = 2 * (atan(tan(fovy/2) * (float)w/h));
 			float alpha = tan(fovx/2) * (((float)x-w/2)/((float)w/2));
@@ -173,21 +196,19 @@ bool intersect(Ray ray, int x, int y) {
 			//plugging into formula given
 			vec3 calcedP = alpha * A + beta * B + gamma * C;
 
-			cerr << "alpha: " << alpha << "\tA: " << A.x << ", " << A.y << ", " << A.z << endl;
-			cerr << "beta: " << beta << "\tB: " << B.x << ", " << B.y << ", " << B.z << endl;
-			cerr << "gamma: " << gamma << "\tC: " << C.x << ", " << C.y << ", " << C.z << endl;
-			//cerr << "calcedP: " << calcedP.x << ", " << calcedP.y << ", " << calcedP.z << endl;
-			//cerr << "P: " << P.x << ", " << P.y << ", " << P.z << endl;
+			// cerr << "alpha: " << alpha << "\tA: " << A.x << ", " << A.y << ", " << A.z << endl;
+			// cerr << "beta: " << beta << "\tB: " << B.x << ", " << B.y << ", " << B.z << endl;
+			// cerr << "gamma: " << gamma << "\tC: " << C.x << ", " << C.y << ", " << C.z << endl;
 
-			cerr << "Sum weights: " << alpha + beta + gamma << endl; 
+			// cerr << "Sum weights: " << alpha + beta + gamma << endl; 
 
 			//if intersection, weights all greater than 0
 			if (alpha <= 0 || beta <= 0 || gamma <= 0 ){
-				cerr << "MISS! ray intersected plane outside of triangle\n";
+				// cerr << "MISS! ray intersected plane outside of triangle\n";
 				return 0;
 			}
 
-			cerr << "HIT! ray intersects plane inside triange" << x << endl;
+			// cerr << "HIT! ray intersects plane inside triange" << x << endl;
 			return 1;
 			
 
