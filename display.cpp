@@ -18,7 +18,7 @@ using namespace std ;
 
 
 
-bool intersect(Ray, int, int);
+bool intersect(Ray);
 void rayTrace(vec3);
 bool drawSquare(int, int);
 
@@ -62,16 +62,15 @@ void display() {
 	transf = tr * sc;
 
 	//apply transformation to each vertex in object
-  	// for (int i = 0 ; i < numobjects ; i++) {
+  	for (int i = 0 ; i < numobjects ; i++) {
 
-   //  	object* obj = &(objects[i]); // Grabs an object struct.
-
-   //  	//apply object transform to each vertex
-   //  	for (int i = 0; i < obj->shapeVertices.size(); ++i)
-   //  	{
-   //  		obj->shapeVertices[i] = obj->transform * obj->shapeVertices[i];
-   //  	}
-   //  }
+    	object* obj = &(objects[i]); // Grabs an object struct.
+    	//apply object transform to each vertex
+    	for (int i = 0; i < obj->shapeVertices.size(); ++i)
+    	{
+    		obj->shapeVertices[i] = obj->transform * obj->shapeVertices[i];
+    	}
+    }
 
     // construct camera
     eye = vec3(0,0,4);
@@ -120,25 +119,22 @@ void rayTrace(vec3 camera) {
 			float alpha = tan(fovx/2) * (((float)x-w/2)/((float)w/2));
 			float beta = tan(fovy/2) * ((h/2-y)/(h/2));
 			
-		
 			//calculate ray equation in world coordinates NEW from Office Hours
 			vec3 direction = vec3( alpha*_u + beta*_v - _w );
 			direction = glm::normalize(direction);
 			Ray ray(camera, direction);	
 
-			//cerr << "camera: " << camera.z << endl;
-
-			if (x == w/2 && y == h/2)
+/*			if (x == w/2 && y == h/2)
 			{
 				cerr << direction.x << " " << direction.y << " " << direction.z << endl;
-				cerr << "intersection: " << intersect(ray, x, y) << endl;
+				cerr << "intersection: " << intersect(ray) << endl;
 
 			} else {
 				continue;
-			}
+			}*/
 
 			//find out if ray intersects object geometry
-			if(intersect(ray, x, y))
+			if(intersect(ray))
 			{
 				color.rgbRed = 0.0;
 				color.rgbGreen = (double) 255.0 * x/w;
@@ -165,7 +161,11 @@ void rayTrace(vec3 camera) {
 }
 
 //determine whether the ray through pixel x, y intersects geometry
-bool intersect(Ray ray, int x, int y) {
+bool intersect(Ray ray) {
+
+	vec3 AP, BP, CP;
+	float Aw, Bw, Cw, alpha, beta, gamma;
+
 	//check against each object geometry
 	for (int ind = 0; ind < numobjects; ++ind)
 	{
@@ -182,33 +182,30 @@ bool intersect(Ray ray, int x, int y) {
 			vec3 cross = glm::cross( (C-A), (B-A));
 			vec3 n = glm::normalize( cross );
 
-			//use normal in plane equation
+			//calculating ray plane intersection
 			float t = (glm::dot(A, n) - glm::dot(ray.p0, n)) / (glm::dot(ray.p1, n));
 			vec3 P = ray.p0 + ray.p1 * t;
 
-			cerr << "t: " << t << " An: " << glm::dot(A, n) << " p0,n: " << glm::dot(ray.p0, n) << " p1,n: " << glm::dot(ray.p1, n) << endl;
-			cerr << "p0: " << ray.p0.x << ray.p0.y << ray.p0.z << " P: " << P.x << P.y << P.z << endl;
-			//find weights			
-			float fovx = 2 * (atan(tan(fovy/2) * (float)w/h));
-			float alpha = tan(fovx/2) * (((float)x-w/2)/((float)w/2));
-			float beta = tan(fovy/2) * ((h/2-y)/(h/2));
-			float gamma = 1-beta-alpha;
-			//plugging into formula given
-			vec3 calcedP = alpha * A + beta * B + gamma * C;
+			//calculate barycentric coordinates
+			AP = glm::normalize((glm::cross(n, C-B)) / (glm::dot(glm::cross(n, C-B), A-C)));
+			Aw = glm::dot(AP, C) * -1;
+			BP = glm::normalize((glm::cross(n, A-C)) / (glm::dot(glm::cross(n, A-C), B-A)));
+			Bw = glm::dot(BP, A) * -1;
+			CP = glm::normalize((glm::cross(n, B-A)) / (glm::dot(glm::cross(n, B-A), C-B)));
+			Cw = glm::dot(CP, B) * -1;
 
-			// cerr << "alpha: " << alpha << "\tA: " << A.x << ", " << A.y << ", " << A.z << endl;
-			// cerr << "beta: " << beta << "\tB: " << B.x << ", " << B.y << ", " << B.z << endl;
-			// cerr << "gamma: " << gamma << "\tC: " << C.x << ", " << C.y << ", " << C.z << endl;
-
-			// cerr << "Sum weights: " << alpha + beta + gamma << endl; 
+			//calculate weights
+			alpha = glm::dot(AP, P) + Aw;
+			beta = glm::dot(BP, P) + Bw;
+			gamma = glm::dot(CP, P) + Cw;
 
 			//if intersection, weights all greater than 0
-			if (alpha <= 0 || beta <= 0 || gamma <= 0 ){
-				// cerr << "MISS! ray intersected plane outside of triangle\n";
+			if (alpha < 0 || beta < 0 || gamma < 0 || alpha > 1 || beta > 1 || gamma > 1 ){
+				cerr << "MISS! ray intersected plane outside of triangle\n";
 				return 0;
 			}
 
-			// cerr << "HIT! ray intersects plane inside triange" << x << endl;
+			cerr << "HIT! ray intersects plane inside triange" <<  endl;
 			return 1;
 			
 
