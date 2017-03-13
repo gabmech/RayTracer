@@ -110,9 +110,8 @@ int main(int argc, char* argv[]) {
 
   //init();
   readfile(argv[1]) ; 
-
   display();
-/*  glutDisplayFunc(display);
+/*  glutDisplayFunc(display); 
   glutSpecialFunc(specialKey);
   glutKeyboardFunc(keyboard);
   glutReshapeFunc(reshape);

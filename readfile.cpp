@@ -192,10 +192,10 @@ void readfile(const char* filename)
             // You may need to use the upvector fn in Transform.cpp
             // to set up correctly. 
             // Set eyeinit upinit center fovy in variables.h 
-            eye = vec3(values[0], values[1], values[2]);
+            eyeinit = vec3(values[0], values[1], values[2]);
             center = vec3(values[3], values[4], values[5]);
             vec3 axis = vec3(values[6], values[7], values[8]);
-            up = Transform::upvector(axis, eye);
+            upinit = Transform::upvector(axis, eye);
             fovy = values[9] / 57.2958; // convert to radians
 
           }

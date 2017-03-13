@@ -72,18 +72,13 @@ void display() {
     	}
     }
 
-    // construct camera
-    eye = vec3(0,0,4);
-    center = vec3(0,0,0);
-    up=vec3(0,1,0);
-    fovy = 30/57.2958;
-	_w = glm::normalize(eye-center);        // eye
-	_u = glm::normalize(glm::cross(up, _w)); // direction from eye to center
-	_v = glm::cross(_w, _u);                  // up direction
+    //construct the camera
+	_w = glm::normalize(eye-center);        	// eye
+	_u = glm::normalize(glm::cross(up, _w)); 	// direction from eye to center
+	_v = glm::cross(_w, _u);                  	// up direction
 
-	//vec3 camera(0, 0, -1);
-	cerr << "eye: " << eye.z << endl;
 	vec3 camera = vec3 (eye);
+
     rayTrace(camera);
 }
 
@@ -163,8 +158,8 @@ void rayTrace(vec3 camera) {
 //determine whether the ray through pixel x, y intersects geometry
 bool intersect(Ray ray) {
 
-	vec3 AP, BP, CP;
-	float Aw, Bw, Cw, alpha, beta, gamma;
+	vec3 AP, BP, CP, P, cross, n, A, B, C;
+	float Aw, Bw, Cw, alpha, beta, gamma, t;
 
 	//check against each object geometry
 	for (int ind = 0; ind < numobjects; ++ind)
@@ -174,17 +169,17 @@ bool intersect(Ray ray) {
 		if (obj.type == tri)
 		{
 			//define variables for easier understanding
-			vec3 A = vec3(obj.shapeVertices[1].x, obj.shapeVertices[1].y, obj.shapeVertices[1].z),
-				 C = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z), 
-				 B = vec3(obj.shapeVertices[2].x, obj.shapeVertices[2].y, obj.shapeVertices[2].z );
+			A = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z);
+			B = vec3(obj.shapeVertices[1].x, obj.shapeVertices[1].y, obj.shapeVertices[1].z );
+			C = vec3(obj.shapeVertices[2].x, obj.shapeVertices[2].y, obj.shapeVertices[2].z); 
 
 			//calculate normal and normalize it
-			vec3 cross = glm::cross( (C-A), (B-A));
-			vec3 n = glm::normalize( cross );
+			cross = glm::cross( (C-A), (B-A));
+			n = glm::normalize( cross );
 
 			//calculating ray plane intersection
-			float t = (glm::dot(A, n) - glm::dot(ray.p0, n)) / (glm::dot(ray.p1, n));
-			vec3 P = ray.p0 + ray.p1 * t;
+			t = (glm::dot(A, n) - glm::dot(ray.p0, n)) / (glm::dot(ray.p1, n));
+			P = ray.p0 + ray.p1 * t;
 
 			//calculate barycentric coordinates
 			AP = glm::normalize((glm::cross(n, C-B)) / (glm::dot(glm::cross(n, C-B), A-C)));
@@ -201,11 +196,11 @@ bool intersect(Ray ray) {
 
 			//if intersection, weights all greater than 0
 			if (alpha < 0 || beta < 0 || gamma < 0 || alpha > 1 || beta > 1 || gamma > 1 ){
-				cerr << "MISS! ray intersected plane outside of triangle\n";
+				//cerr << "MISS! ray intersected plane outside of triangle\n";
 				return 0;
 			}
 
-			cerr << "HIT! ray intersects plane inside triange" <<  endl;
+			//cerr << "HIT! ray intersects plane inside triange" <<  endl;
 			return 1;
 			
 
@@ -217,7 +212,7 @@ bool intersect(Ray ray) {
 			cerr << "Incorrect way to tell which type of object it is while intersecting in display.cpp\n";
 		}
 	}
-	return 1;
+	return 0;
 }
 
 
