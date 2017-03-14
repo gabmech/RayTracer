@@ -6,6 +6,10 @@
 
 #include "Transform.h"
 #include <stdio.h>
+#include <iostream>
+
+using namespace std;
+
 
 
 // Helper rotation function.  Please implement this.  
@@ -123,9 +127,16 @@ mat4 Transform::translate(const float &tx, const float &ty, const float &tz)
 
 vec3 Transform::upvector(const vec3 &up, const vec3 & zvec) 
 {
+  cerr << "up: " << up.x <<up.y <<up.z << endl;
+  cerr << "zvec: " << zvec.x <<zvec.y <<zvec.z << endl;
   vec3 x = glm::cross(up,zvec); 
+  cerr << "x: " << x.x <<x.y <<x.z << endl;
+
   vec3 y = glm::cross(zvec,x); 
+    cerr << "y: " << y.x <<y.y <<y.z << endl;
+
   vec3 ret = glm::normalize(y); 
+  cerr << "ret: " << ret.x <<ret.y <<ret.z << endl;
   return ret; 
 }
 

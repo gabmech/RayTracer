@@ -79,6 +79,10 @@ void display() {
 
 	vec3 camera = vec3 (eye);
 
+	cerr << "center: " << center.x <<center.y <<center.z << " eye: " << eye.x << eye.y<< eye.z << " up: " << up.x << up.y<< up.z<< endl;
+
+	cerr << "u: " << _u.x <<_u.y <<_u.z << " v: " << _v.x << _v.y<< _v.z << " w: " << _w.x << _w.y<< _w.z<< endl;
+
     rayTrace(camera);
 }
 
@@ -102,9 +106,9 @@ void rayTrace(vec3 camera) {
 	}
 
 	// shoot a ray through every pixel on the image
-	for (int x = 0; x < w; ++x)
+	for (int y = 0; y < h; ++y)
 	{
-		for (int y = 0; y < h; ++y)
+		for (int x = 0; x < w; ++x)
 		{
 			bool hit;
 			RGBQUAD color;
@@ -112,19 +116,19 @@ void rayTrace(vec3 camera) {
 			//generate weights
 			float fovx = 2 * (atan(tan(fovy/2) * (float)w/h));
 			float alpha = tan(fovx/2) * (((float)x-w/2)/((float)w/2));
-			float beta = tan(fovy/2) * (((float)h/2-y)/((float)h/2));
-			
+			float beta = tan(fovy/2) * (((float)y-h/2)/((float)h/2));
+
 			//calculate ray equation in world coordinates NEW from Office Hours
 			vec3 direction = vec3( alpha*_u + beta*_v - _w );
 			direction = glm::normalize(direction);
 			Ray ray(camera, direction);	
 
-			//find out if ray intersects object geometry
+			// find out if ray intersects object geometry
 			if(intersect(ray))
 			{
-				color.rgbRed = 0.0;
-				color.rgbGreen = (double) 255.0 * x/w;
-				color.rgbBlue = (double)  255.0 * x/w;
+				color.rgbRed = 255.0;
+				color.rgbGreen = 0.0;
+				color.rgbBlue = 0.0;
 				FreeImage_SetPixelColor(bitmap, x, y, &color);			
 			} 
 			else {
@@ -133,6 +137,11 @@ void rayTrace(vec3 camera) {
 				color.rgbBlue = 0.0;
 				FreeImage_SetPixelColor(bitmap, x, y, &color);			
 			}
+				// color.rgbRed = (alpha + 1)*127;//(float)x/y * 255;
+				// color.rgbGreen = (beta + 1)*127;
+				// color.rgbBlue = 0;
+				// FreeImage_SetPixelColor(bitmap, x, y, &color);			
+
 
 		}
 	}
@@ -190,20 +199,20 @@ bool intersect(Ray ray) {
 			beta = glm::dot(BP, P) + Bw;
 			gamma = glm::dot(CP, P) + Cw;
 
-			cerr << alpha << " " << beta << " " << gamma << endl;
+			//cerr << alpha << " " << beta << " " << gamma << endl;
 
 			//if intersection, weights all between 0 and 1
 			if (alpha >= 0 && beta >= 0 && gamma >= 0 && alpha <= 1 && beta <= 1 && gamma <= 1 ){
-				cerr << "Intersected triangle " << ind+1 << ". HIT!!!" << endl;
+				//cerr << "Intersected triangle " << ind+1 << ". HIT!!!" << endl;
 				return 1;
 			}
-			cerr << "didn't intersect triangle " << ind+1 << endl;
+			//cerr << "didn't intersect triangle " << ind+1 << endl;
 			
 		} 
 		else if (obj.type == sphere)
 		{
 
-			
+
 			
 		} else {
 			cerr << "Incorrect way to tell which type of object it is while intersecting in display.cpp\n";
