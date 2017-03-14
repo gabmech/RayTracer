@@ -62,15 +62,15 @@ void display() {
 	transf = tr * sc;
 
 	//apply transformation to each vertex in object
-  	for (int i = 0 ; i < numobjects ; i++) {
+  	// for (int i = 0 ; i < numobjects ; i++) {
 
-    	object* obj = &(objects[i]); // Grabs an object struct.
-    	//apply object transform to each vertex
-    	for (int i = 0; i < obj->shapeVertices.size(); ++i)
-    	{
-    		obj->shapeVertices[i] = obj->transform * obj->shapeVertices[i];
-    	}
-    }
+   //  	object* obj = &(objects[i]); // Grabs an object struct.
+   //  	//apply object transform to each vertex
+   //  	for (int i = 0; i < obj->shapeVertices.size(); ++i)
+   //  	{
+   //  		obj->shapeVertices[i] = obj->transform * obj->shapeVertices[i];
+   //  	}
+   //  }
 
     //construct the camera
 	_w = glm::normalize(eye-center);        	// eye
@@ -112,27 +112,12 @@ void rayTrace(vec3 camera) {
 			//generate weights
 			float fovx = 2 * (atan(tan(fovy/2) * (float)w/h));
 			float alpha = tan(fovx/2) * (((float)x-w/2)/((float)w/2));
-			float beta = tan(fovy/2) * ((h/2-y)/(h/2));
+			float beta = tan(fovy/2) * (((float)h/2-y)/((float)h/2));
 			
-			 	cerr << _w.x << _w.y << _w.z << endl;
-			 	cerr << center.x << center.y << center.z << endl;
-			 	cerr << eye.x << eye.y << eye.z << endl;
-
 			//calculate ray equation in world coordinates NEW from Office Hours
 			vec3 direction = vec3( alpha*_u + beta*_v - _w );
 			direction = glm::normalize(direction);
 			Ray ray(camera, direction);	
-
-			// if (x == w/2 && y == h/2)
-			// {
-			// 	cerr << _w.x << _w.y << _w.z << endl;
-			// 	cerr << "Direction: " << direction.x << " " << direction.y << " " << direction.z << endl;
-			// 	int a1 = intersect(ray);
-			// 	cerr << "intersection: " << a1 << endl;
-
-			// } else {
-			// 	continue;
-			// }
 
 			//find out if ray intersects object geometry
 			if(intersect(ray))
@@ -148,6 +133,7 @@ void rayTrace(vec3 camera) {
 				color.rgbBlue = 0.0;
 				FreeImage_SetPixelColor(bitmap, x, y, &color);			
 			}
+
 		}
 	}
 
@@ -192,11 +178,11 @@ bool intersect(Ray ray) {
 			P = ray.p0 + ray.p1 * t;
 
 			//calculate barycentric coordinates
-			AP = glm::normalize((glm::cross(n, C-B)) / (glm::dot(glm::cross(n, C-B), A-C)));
+			AP = (glm::cross(n, C-B)) / (glm::dot(glm::cross(n, C-B), A-C));
 			Aw = glm::dot(AP, C) * -1;
-			BP = glm::normalize((glm::cross(n, A-C)) / (glm::dot(glm::cross(n, A-C), B-A)));
+			BP = (glm::cross(n, A-C)) / (glm::dot(glm::cross(n, A-C), B-A));
 			Bw = glm::dot(BP, A) * -1;
-			CP = glm::normalize((glm::cross(n, B-A)) / (glm::dot(glm::cross(n, B-A), C-B)));
+			CP = (glm::cross(n, B-A)) / (glm::dot(glm::cross(n, B-A), C-B));
 			Cw = glm::dot(CP, B) * -1;
 
 			//calculate weights
@@ -216,6 +202,8 @@ bool intersect(Ray ray) {
 		} 
 		else if (obj.type == sphere)
 		{
+
+			
 			
 		} else {
 			cerr << "Incorrect way to tell which type of object it is while intersecting in display.cpp\n";
