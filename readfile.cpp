@@ -226,11 +226,10 @@ void readfile(const char* filename)
 
               obj->type = sphere; 
 
-              //save the corresponding vertices to this opject
-              for (int i = 0; i < 4; ++i)
-              {
-                obj->shapeVertices.push_back( vertices[ values[i] ] );
-              }
+              vec4 sphere = vec4( values[0], values[1], values[2], values[3] );
+                
+              obj->shapeVertices.push_back( sphere );
+              
             }
             ++numobjects; 
           }

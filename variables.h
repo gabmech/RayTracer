@@ -61,7 +61,7 @@ EXTERN float point[6] ;
 EXTERN float shininess ; 
 
 // For multiple objects, read from a file.  
-const int maxobjects = 40 ; 
+const int maxobjects = 100 ; 
 EXTERN int numobjects ; 
 EXTERN struct object {
   shape type ; 

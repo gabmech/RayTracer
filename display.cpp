@@ -205,6 +205,65 @@ bool intersect(Ray ray) {
 		else if (obj.type == sphere)
 		{
 
+			float a, b, c, radius, pos, neg;
+			vec3 center;
+
+			// extract center
+			center = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z);
+			radius = obj.shapeVertices[0].w;
+
+			// calculating a,b,c to be used on quadratic equation
+			a = glm::dot(ray.p1, ray.p1);
+			b = 2.0 * glm::dot(ray.p1, (ray.p0 - center) );
+			c = glm::dot( (ray.p0-center), (ray.p0-center) ) - (radius*radius);
+
+			//solving for positive and negative signed versions of quadratic equation
+			pos = (-b + sqrt( b*b - 4.0*a*c )) / (2*a);
+			neg = (-b - sqrt( b*b - 4.0*a*c )) / (2*a);
+
+			//determining what to do based on roots
+			//complex roots
+			if ( ( b*b - 4.0*a*c ) < 0 )
+			{
+				continue;
+			}
+			//2 positive roots and not equal
+			else if (pos > 0 && neg > 0 && pos != neg)
+			{
+				//pick smaller root
+				if (pos>neg)
+				{
+					t = neg;	
+				} else {
+					t = pos;
+				}
+				hit = true;
+			} 
+			//roots are equal
+			else if (pos == neg)
+			{
+				t = pos;
+				hit = true;
+			}
+			// one positive, one negative root
+			else if ((pos > 0 && neg < 0) || (pos < 0 && neg > 0))
+			{
+				// pick positive root
+				if (pos > 0)
+				{
+					t = pos;
+				} else	{
+					t = neg;
+				}
+				hit = true;
+			} 
+
+			//find if t was minimum
+			if(t>0 && (indexOfMinT==-1 || t < minT)){
+				hit = true;
+				minT = t;
+				indexOfMinT = ind;
+			}
 
 			
 		} else {
