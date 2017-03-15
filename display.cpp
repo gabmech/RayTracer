@@ -112,9 +112,9 @@ void rayTrace(vec3 camera) {
 			bool hit;
 
 			//generate weights
-			float fovx = 2 * (atan(tan(fovy/2) * (float)w/h));
-			float alpha = tan(fovx/2) * (((float)x-w/2)/((float)w/2));
-			float beta = tan(fovy/2) * (((float)y-h/2)/((float)h/2));
+			float fovx = 2.0 * (atan(tan(fovy/2.0) * (float)w/h));
+			float alpha = tan(fovx/2.0) * (((float)x-w/2.0)/((float)w/2.0));
+			float beta = tan(fovy/2.0) * (((float)y-h/2.0)/((float)h/2.0));
 
 			//calculate ray equation in world coordinates NEW from Office Hours
 			vec3 direction = vec3( alpha*_u + beta*_v - _w );
@@ -211,9 +211,9 @@ bool intersect(Ray ray) {
 			center = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z);
 
 			mat4 inverseTransf = inverse(obj.transform);
-			vec3 p0Transf = vec3(inverseTransf * vec4(ray.p0,1));
-			vec3 p1Transf = vec3(inverseTransf * vec4(ray.p1,0));
-			vec3 centerTransf = vec3(inverseTransf * vec4(center,1));
+			vec3 p0Transf = vec3(inverseTransf * vec4(ray.p0,1.0));
+			vec3 p1Transf = vec3(inverseTransf * vec4(ray.p1,0.0));
+			vec3 centerTransf = vec3(inverseTransf * vec4(center,1.0));
 
 			// extract center
 			radius = obj.shapeVertices[0].w;
@@ -224,8 +224,8 @@ bool intersect(Ray ray) {
 			c = glm::dot( (p0Transf-centerTransf), (p0Transf-centerTransf) ) - (radius*radius);
 
 			//solving for positive and negative signed versions of quadratic equation
-			pos = (-b + sqrt( b*b - 4.0*a*c )) / (2*a);
-			neg = (-b - sqrt( b*b - 4.0*a*c )) / (2*a);
+			pos = (-b + sqrt( b*b - 4.0*a*c )) / (2.0*a);
+			neg = (-b - sqrt( b*b - 4.0*a*c )) / (2.0*a);
 
 			//determining what to do based on roots
 			//complex roots
