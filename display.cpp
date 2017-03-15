@@ -17,13 +17,12 @@ using namespace std ;
 #include "Geometry.h"
 
 
-
 bool intersect(Ray);
 void rayTrace(vec3);
 bool drawSquare(int, int);
 
 vec3 _u, _v, _w;
-
+RGBQUAD color;
 
 
 // New helper transformation function to transform vector by modelview 
@@ -62,15 +61,15 @@ void display() {
 	transf = tr * sc;
 
 	//apply transformation to each vertex in object
-  	// for (int i = 0 ; i < numobjects ; i++) {
+  	for (int i = 0 ; i < numobjects ; i++) {
 
-   //  	object* obj = &(objects[i]); // Grabs an object struct.
-   //  	//apply object transform to each vertex
-   //  	for (int i = 0; i < obj->shapeVertices.size(); ++i)
-   //  	{
-   //  		obj->shapeVertices[i] = obj->transform * obj->shapeVertices[i];
-   //  	}
-   //  }
+    	object* obj = &(objects[i]); // Grabs an object struct.
+    	//apply object transform to each vertex
+    	for (int i = 0; i < obj->shapeVertices.size(); ++i)
+    	{
+    		obj->shapeVertices[i] = obj->transform * obj->shapeVertices[i];
+    	}
+    }
 
     //construct the camera
 	_w = glm::normalize(eye-center);        	// eye
@@ -79,9 +78,9 @@ void display() {
 
 	vec3 camera = vec3 (eye);
 
-	cerr << "center: " << center.x <<center.y <<center.z << " eye: " << eye.x << eye.y<< eye.z << " up: " << up.x << up.y<< up.z<< endl;
+	//cerr << "center: " << center.x <<center.y <<center.z << " eye: " << eye.x << eye.y<< eye.z << " up: " << up.x << up.y<< up.z<< endl;
 
-	cerr << "u: " << _u.x <<_u.y <<_u.z << " v: " << _v.x << _v.y<< _v.z << " w: " << _w.x << _w.y<< _w.z<< endl;
+	//cerr << "u: " << _u.x <<_u.y <<_u.z << " v: " << _v.x << _v.y<< _v.z << " w: " << _w.x << _w.y<< _w.z<< endl;
 
     rayTrace(camera);
 }
@@ -111,7 +110,6 @@ void rayTrace(vec3 camera) {
 		for (int x = 0; x < w; ++x)
 		{
 			bool hit;
-			RGBQUAD color;
 
 			//generate weights
 			float fovx = 2 * (atan(tan(fovy/2) * (float)w/h));
@@ -126,22 +124,11 @@ void rayTrace(vec3 camera) {
 			// find out if ray intersects object geometry
 			if(intersect(ray))
 			{
-				color.rgbRed = 255.0;
-				color.rgbGreen = 0.0;
-				color.rgbBlue = 0.0;
 				FreeImage_SetPixelColor(bitmap, x, y, &color);			
 			} 
 			else {
-				color.rgbRed = 0.0;
-				color.rgbGreen = 0.0;
-				color.rgbBlue = 0.0;
 				FreeImage_SetPixelColor(bitmap, x, y, &color);			
 			}
-				// color.rgbRed = (alpha + 1)*127;//(float)x/y * 255;
-				// color.rgbGreen = (beta + 1)*127;
-				// color.rgbBlue = 0;
-				// FreeImage_SetPixelColor(bitmap, x, y, &color);			
-
 
 		}
 	}
@@ -162,8 +149,6 @@ bool intersect(Ray ray) {
 	vec3 AP, BP, CP, P, cross, n, A, B, C;
 	float Aw, Bw, Cw, alpha, beta, gamma, t;
 
-	cerr << "NUMO: " << numobjects << endl;
-
 	//check against each object geometry
 	for (int ind = 0; ind < numobjects; ++ind)
 	{
@@ -175,8 +160,6 @@ bool intersect(Ray ray) {
 			A = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z);
 			B = vec3(obj.shapeVertices[1].x, obj.shapeVertices[1].y, obj.shapeVertices[1].z );
 			C = vec3(obj.shapeVertices[2].x, obj.shapeVertices[2].y, obj.shapeVertices[2].z); 
-
-			cerr << "triangle: " << ind+1 << endl;
 
 			//calculate normal and normalize it
 			cross = glm::cross( (C-A), (B-A));
@@ -204,6 +187,9 @@ bool intersect(Ray ray) {
 			//if intersection, weights all between 0 and 1
 			if (alpha >= 0 && beta >= 0 && gamma >= 0 && alpha <= 1 && beta <= 1 && gamma <= 1 ){
 				//cerr << "Intersected triangle " << ind+1 << ". HIT!!!" << endl;
+				color.rgbRed = obj.ambient[0]*255.0;
+				color.rgbGreen = obj.ambient[1]*255.0;
+				color.rgbBlue = obj.ambient[2]*255.0;
 				return 1;
 			}
 			//cerr << "didn't intersect triangle " << ind+1 << endl;
@@ -218,6 +204,9 @@ bool intersect(Ray ray) {
 			cerr << "Incorrect way to tell which type of object it is while intersecting in display.cpp\n";
 		}
 	}
+	color.rgbRed = 0.0;
+	color.rgbGreen = 0.0;
+	color.rgbBlue = 0.0;
 	return 0;
 }
 
