@@ -8,8 +8,6 @@ Ray::Ray(vec3 start_point, vec3 direction) {
 }
 
 
-
-
 Sphere::Sphere(vec3 c, float r) {
 	center = c;
 	radius = r;
