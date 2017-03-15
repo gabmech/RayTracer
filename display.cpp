@@ -105,9 +105,9 @@ void rayTrace(vec3 camera) {
 	}
 
 	// shoot a ray through every pixel on the image
-	for (int y = 0; y < h; ++y)
+	for (float y = 0.5; y < h; ++y)
 	{
-		for (int x = 0; x < w; ++x)
+		for (float x = 0; x < w-1; ++x)
 		{
 			bool hit;
 
