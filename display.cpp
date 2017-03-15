@@ -146,6 +146,10 @@ void rayTrace(vec3 camera) {
 //determine whether the ray through pixel x, y intersects geometry
 bool intersect(Ray ray) {
 
+	bool hit = false;
+	float minT;
+	int indexOfMinT=-1;
+
 	vec3 AP, BP, CP, P, cross, n, A, B, C;
 	float Aw, Bw, Cw, alpha, beta, gamma, t;
 
@@ -166,9 +170,9 @@ bool intersect(Ray ray) {
 			n = glm::normalize( cross );
 
 			//calculating ray plane intersection
-			t = (glm::dot(A, n) - glm::dot(ray.p0, n)) / (glm::dot(ray.p1, n));
+			t = ((float)(glm::dot(A, n) - glm::dot(ray.p0, n))) / (float)(glm::dot(ray.p1, n));
 			P = ray.p0 + ray.p1 * t;
-
+			
 			//calculate barycentric coordinates
 			AP = (glm::cross(n, C-B)) / (glm::dot(glm::cross(n, C-B), A-C));
 			Aw = glm::dot(AP, C) * -1;
@@ -186,11 +190,14 @@ bool intersect(Ray ray) {
 
 			//if intersection, weights all between 0 and 1
 			if (alpha >= 0 && beta >= 0 && gamma >= 0 && alpha <= 1 && beta <= 1 && gamma <= 1 ){
+
+				if(t>0 && (indexOfMinT==-1 || t < minT)){
+					hit = true;
+					minT = t;
+					indexOfMinT = ind;
+				}
 				//cerr << "Intersected triangle " << ind+1 << ". HIT!!!" << endl;
-				color.rgbRed = obj.ambient[0]*255.0;
-				color.rgbGreen = obj.ambient[1]*255.0;
-				color.rgbBlue = obj.ambient[2]*255.0;
-				return 1;
+
 			}
 			//cerr << "didn't intersect triangle " << ind+1 << endl;
 			
@@ -204,6 +211,14 @@ bool intersect(Ray ray) {
 			cerr << "Incorrect way to tell which type of object it is while intersecting in display.cpp\n";
 		}
 	}
+
+	if(hit){
+		color.rgbRed = objects[indexOfMinT].ambient[0]*255.0;
+		color.rgbGreen = objects[indexOfMinT].ambient[1]*255.0;
+		color.rgbBlue = objects[indexOfMinT].ambient[2]*255.0;
+		return 1;
+	}
+
 	color.rgbRed = 0.0;
 	color.rgbGreen = 0.0;
 	color.rgbBlue = 0.0;
