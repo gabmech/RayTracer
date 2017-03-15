@@ -208,17 +208,20 @@ bool intersect(Ray ray) {
 			float a, b, c, radius, pos, neg;
 			vec3 center;
 
+			center = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z);
+
 			mat4 inverseTransf = inverse(obj.transform);
 			vec3 p0Transf = vec3(inverseTransf * vec4(ray.p0,1));
 			vec3 p1Transf = vec3(inverseTransf * vec4(ray.p1,0));
+			vec3 centerTransf = vec3(inverseTransf * vec4(center,1));
+
 			// extract center
-			center = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z);
 			radius = obj.shapeVertices[0].w;
 
 			// calculating a,b,c to be used on quadratic equation
 			a = glm::dot(p1Transf, p1Transf);
-			b = 2.0 * glm::dot(p1Transf, (p0Transf - center) );
-			c = glm::dot( (p0Transf-center), (p0Transf-center) ) - (radius*radius);
+			b = 2.0 * glm::dot(p1Transf, (p0Transf - centerTransf) );
+			c = glm::dot( (p0Transf-centerTransf), (p0Transf-centerTransf) ) - (radius*radius);
 
 			//solving for positive and negative signed versions of quadratic equation
 			pos = (-b + sqrt( b*b - 4.0*a*c )) / (2*a);
