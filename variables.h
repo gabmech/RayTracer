@@ -78,6 +78,7 @@ EXTERN struct object {
 EXTERN int maxverts;
 EXTERN int numVertices;
 EXTERN std::vector<vec4> vertices;
+EXTERN char * fileName;
 
 
 

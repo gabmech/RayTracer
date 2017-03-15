@@ -73,6 +73,7 @@ void readfile(const char* filename)
   ifstream in;
   in.open(filename); 
   if (in.is_open()) {
+    fileName = (char *)malloc(sizeof(char)*100);
 
     // I need to implement a matrix stack to store transforms.  
     // This is done using standard STL Templates 
@@ -182,6 +183,10 @@ void readfile(const char* filename)
               point[i] = values[i];
             }
           }
+        }
+        else if (cmd == "output")
+        {
+          s >> fileName;
         }
         else if (cmd == "camera") {
           validinput = readvals(s,10,values); // 10 values eye cen up fov

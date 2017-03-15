@@ -135,10 +135,10 @@ void rayTrace(vec3 camera) {
 
 
 
-	//draw image
-	if(FreeImage_Save(FIF_PNG, bitmap, "test11.png", 0)){
-		cout << "Image successfully saved" << endl;
-	}
+		if(FreeImage_Save(FIF_PNG, bitmap, fileName, 0)){
+			cout << "Image successfully saved in filename" << endl;
+		}
+
 	//housekeeping
 	FreeImage_DeInitialise();
 }
