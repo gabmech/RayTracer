@@ -20,6 +20,9 @@ using namespace std ;
 Intersection intersect(Ray);
 void rayTrace(vec3);
 vec3 findColor(Intersection);
+int isPointNotInShadow(int lightIndex, int indexOfMinT);
+int isDirectionalNotInShadow(int lightIndex, int indexOfMinT);
+float getMagnitude(vec3 vec);
 
 
 vec3 _u, _v, _w;
@@ -141,7 +144,7 @@ void rayTrace(vec3 camera) {
 			color.rgbGreen = foundColor[1];
 			color.rgbBlue = foundColor[2];
 
-			cerr << foundColor[0] << " " << foundColor[1] << " " << foundColor[2] << endl;
+			//cerr << foundColor[0] << " " << foundColor[1] << " " << foundColor[2] << endl;
 
 			FreeImage_SetPixelColor(bitmap, x, y, &color);			
 
@@ -195,7 +198,7 @@ Intersection intersect(Ray ray) {
 			// cerr << "t: " << t << endl;
 
 			objects[ind].point = P;
-			objects[ind].normal = glm::cross(C-B, A-B);
+			objects[ind].normal = glm::cross(C-B, A-C);
 			
 			//calculate barycentric coordinates
 			AP = (glm::cross(n, C-B)) / (glm::dot(glm::cross(n, C-B), A-C));
@@ -279,7 +282,7 @@ Intersection intersect(Ray ray) {
 
 			//transform point and normal back to world coords
 			objects[ind].point = vec3(obj.transform * vec4(P, 1));
-			objects[ind].point = vec3(glm::transpose(glm::inverse(obj.transform)) * vec4(n, 1));
+			objects[ind].normal = vec3(inverse(transpose(obj.transform)) * vec4(n, 1));
 
 			//find if t was minimum
 			if(t>0 && (indexOfMinT==-1 || t < minT)){
@@ -315,9 +318,32 @@ vec3 findColor(Intersection hit) {
 
         if (indexOfMinT >= 0)
         {
-			result[0] = objects[indexOfMinT].ambient[0]*255.0;
-			result[1] = objects[indexOfMinT].ambient[1]*255.0;
-			result[2] = objects[indexOfMinT].ambient[2]*255.0;
+        	vec3 sumOfLighting;
+        	int s;
+
+        	// check all point lights
+        	for (int lightIndex = 0; lightIndex < numPointLights; ++lightIndex)
+        	{
+        		int inShadow;
+
+        		inShadow = isPointNotInShadow(lightIndex, indexOfMinT); 
+
+        		s = inShadow;
+        	}
+
+        	// //check all directional lights
+        	// for (int lightIndex = 0; lightIndex < numDirectionalLights; ++lightIndex)
+        	// {
+        	// 	int inShadow;
+
+        	// 	inShadow = isDirectionalNotInShadow(lightIndex, indexOfMinT); 
+
+        	// 	//sumOfLighting = the whole formula;
+        	// }
+
+			result[0] = objects[indexOfMinT].ambient[0]*255.0*s;
+			result[1] = objects[indexOfMinT].ambient[1]*255.0*s;
+			result[2] = objects[indexOfMinT].ambient[2]*255.0*s;
         }
         else {
 			result[0] = 0.0;
@@ -329,6 +355,71 @@ vec3 findColor(Intersection hit) {
 
 }
 
+int isPointNotInShadow(int lightIndex, int indexOfMinT) {
+
+	vec3 intersectionPoint, direction, normalizedDirection, objectVec;
+	Intersection objectHit = Intersection();
+
+	//create ray
+	intersectionPoint = objects[indexOfMinT].point;
+	direction = pointLights[lightIndex] - intersectionPoint;
+	normalizedDirection = glm::normalize(direction);
+	Ray ray(intersectionPoint, normalizedDirection);
+
+	//intersect ray with objects 
+	objectHit = intersect(ray);
+
+	if (objectHit.ind == -1)
+	{
+		//not in shadow
+		return 1;
+	}
+
+	//compare manitude of object intersection with point light
+	objectVec = objectHit.point - intersectionPoint;
+
+	//check if the length to the object is smaller than length to light
+	if (getMagnitude(direction) > getMagnitude(objectVec))
+	{
+		// in shadow
+		return 0;
+	}
+
+	//not in shadow
+	return 1;
+
+}
+
+
+int isDirectionalNotInShadow(int lightIndex, int indexOfMinT) {
+
+	vec3 intersectionPoint, direction, normalizedDirection, objectVec;
+	Intersection objectHit = Intersection();
+
+	//create ray
+	intersectionPoint = objects[indexOfMinT].point;
+	direction = directionalLights[lightIndex];
+	normalizedDirection = glm::normalize(direction);
+	Ray ray(intersectionPoint, normalizedDirection);
+
+	//intersect ray with objects 
+	objectHit = intersect(ray);
+
+	//didnt hit any objects
+	if (objectHit.ind == -1)
+	{
+		//not in shadow
+		return 1;
+	}
+
+	//in shadow
+	return 0;
+
+}
+
+float getMagnitude(vec3 vec) {
+	return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
+}
 
 
 

@@ -94,28 +94,6 @@ void readfile(const char* filename)
 
         // Process the light, add it to database.
         // Lighting Command
-        if (cmd == "light") {
-          if (numused == numLights) { // No more Lights 
-            cerr << "Reached Maximum Number of Lights " << numused << " Will ignore further lights\n";
-          } else {
-            validinput = readvals(s, 8, values); // Position/color for lts.
-            if (validinput) {
-
-              // YOUR CODE FOR HW 2 HERE. 
-              // Note that values[0...7] shows the read in values 
-              // Make use of lightposn[] and lightcolor[] arrays in variables.h
-              // Those arrays can then be used in display too.  
-
-              for(int i=0;i<4;i++){
-                int offset = numused*4;
-                lightposn[i+offset] = values[i];
-                lightcolor[i+offset] = values[i+4];
-              }
-
-              ++numused; 
-            }
-          }
-        }
 
         // Material Commands 
         // Ambient, diffuse, specular, shininess properties for each object.
@@ -123,7 +101,7 @@ void readfile(const char* filename)
         // the skeleton, also as a hint of how to do the more complex ones.
         // Note that no transforms/stacks are applied to the colors. 
 
-        else if (cmd == "ambient") {
+        if (cmd == "ambient") {
           validinput = readvals(s, 3, values); // colors 
           if (validinput) {
             for (i = 0; i < 3; i++) {
@@ -167,10 +145,18 @@ void readfile(const char* filename)
           validinput = readvals(s, 6, values);
           if (validinput)
           {
+            vec3 light, color;
             for (int i = 0; i < 6; ++i)
             {
-              directional[i] = values[i];
+              if (i < 3)
+              {
+                light[i] = values[i];
+              } else {
+                color[i%3] = values[i];
+              }
             }
+            directionalLights[numDirectionalLights] = light;
+            directionalColors[numDirectionalLights++] = color;
           }
         }
         else if (cmd == "point")
@@ -178,10 +164,18 @@ void readfile(const char* filename)
           validinput = readvals(s, 6, values);
           if (validinput)
           {
+            vec3 light, color;
             for (int i = 0; i < 6; ++i)
             {
-              point[i] = values[i];
+              if (i < 3)
+              {
+                light[i] = values[i];
+              } else {
+                color[i%3] = values[i];
+              }
             }
+            pointLights[numPointLights] = light;
+            pointColors[numPointLights++] = color;
           }
         }
         else if (cmd == "output")
