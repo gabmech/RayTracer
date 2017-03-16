@@ -29,3 +29,12 @@ class Triangle {
   public:
   	Triangle(vec3, vec3, vec3);
 };
+
+
+class Intersection {
+public:
+  vec3 point, normal;
+  int ind;
+  Intersection(vec3, vec3, int);
+  Intersection();
+};

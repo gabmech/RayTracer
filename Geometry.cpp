@@ -21,3 +21,17 @@ Triangle::Triangle(vec3 p_0, vec3 p_1, vec3 p_2)  {
 	p1 = p_1;
 	p2 = p_2;
 }
+
+
+
+
+Intersection::Intersection(vec3 p, vec3 n, int i) {
+	normal = n;
+	point = p;
+	ind = i;
+}
+Intersection::Intersection() {
+	normal = vec3(-1,-1,-1);
+	point = vec3(-1,-1,-1);
+	ind = -1;
+}

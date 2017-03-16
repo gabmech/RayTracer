@@ -17,9 +17,10 @@ using namespace std ;
 #include "Geometry.h"
 
 
-bool intersect(Ray);
+Intersection intersect(Ray);
 void rayTrace(vec3);
-bool drawSquare(int, int);
+vec3 findColor(Intersection);
+
 
 vec3 _u, _v, _w;
 RGBQUAD color;
@@ -107,28 +108,42 @@ void rayTrace(vec3 camera) {
 	// shoot a ray through every pixel on the image
 	for (float y = 0.5; y < h; ++y)
 	{
-		for (float x = 0; x < w-1; ++x)
+		for (float x = 0.5; x < w; ++x)
 		{
-			bool hit;
+			float fovx, beta, alpha;
+			vec3 direction, foundColor;
+			Intersection hit;
+
+			// float x = 0;
+			// float y = 0;
 
 			//generate weights
-			float fovx = 2.0 * (atan(tan(fovy/2.0) * (float)w/h));
-			float alpha = tan(fovx/2.0) * (((float)x-w/2.0)/((float)w/2.0));
-			float beta = tan(fovy/2.0) * (((float)y-h/2.0)/((float)h/2.0));
+			fovx = 2.0 * (atan(tan(fovy/2.0) * (float)w/h));
+			alpha = tan(fovx/2.0) * (((float)x-w/2.0)/((float)w/2.0));
+			beta = tan(fovy/2.0) * (((float)y-h/2.0)/((float)h/2.0));
 
 			//calculate ray equation in world coordinates NEW from Office Hours
-			vec3 direction = vec3( alpha*_u + beta*_v - _w );
+			direction = vec3( alpha*_u + beta*_v - _w );
 			direction = glm::normalize(direction);
+
+			// cerr << "fovx: " << fovx << endl;
+			// cerr << "alpha: " << alpha << endl;
+			// cerr << "beta: " << beta << endl;
+			// cerr << "fovy: " << fovy << endl;
+
 			Ray ray(camera, direction);	
 
 			// find out if ray intersects object geometry
-			if(intersect(ray))
-			{
-				FreeImage_SetPixelColor(bitmap, x, y, &color);			
-			} 
-			else {
-				FreeImage_SetPixelColor(bitmap, x, y, &color);			
-			}
+			hit = intersect(ray);
+			foundColor = findColor(hit);
+
+			color.rgbRed = foundColor[0];
+			color.rgbGreen = foundColor[1];
+			color.rgbBlue = foundColor[2];
+
+			cerr << foundColor[0] << " " << foundColor[1] << " " << foundColor[2] << endl;
+
+			FreeImage_SetPixelColor(bitmap, x, y, &color);			
 
 		}
 	}
@@ -144,12 +159,12 @@ void rayTrace(vec3 camera) {
 }
 
 //determine whether the ray through pixel x, y intersects geometry
-bool intersect(Ray ray) {
+Intersection intersect(Ray ray) {
 
 	bool hit = false;
 	float minT;
 	int indexOfMinT=-1;
-
+	Intersection intersection;
 	vec3 AP, BP, CP, P, cross, n, A, B, C;
 	float Aw, Bw, Cw, alpha, beta, gamma, t;
 
@@ -157,6 +172,7 @@ bool intersect(Ray ray) {
 	for (int ind = 0; ind < numobjects; ++ind)
 	{
 		object obj = objects[ind];
+
 		//triangles
 		if (obj.type == tri)
 		{
@@ -172,6 +188,14 @@ bool intersect(Ray ray) {
 			//calculating ray plane intersection
 			t = ((float)(glm::dot(A, n) - glm::dot(ray.p0, n))) / (float)(glm::dot(ray.p1, n));
 			P = ray.p0 + ray.p1 * t;
+
+			// cerr << "P: " << P.x << P.y << P.z << endl;
+			// cerr << "P0: " << ray.p0.x << ray.p0.y << ray.p0.z << endl;
+			// cerr << "P1: " << ray.p1.x << ray.p1.y << ray.p1.z << endl;
+			// cerr << "t: " << t << endl;
+
+			objects[ind].point = P;
+			objects[ind].normal = glm::cross(C-B, A-B);
 			
 			//calculate barycentric coordinates
 			AP = (glm::cross(n, C-B)) / (glm::dot(glm::cross(n, C-B), A-C));
@@ -181,12 +205,14 @@ bool intersect(Ray ray) {
 			CP = (glm::cross(n, B-A)) / (glm::dot(glm::cross(n, B-A), C-B));
 			Cw = glm::dot(CP, B) * -1;
 
+			// cerr << "ap " << AP.x << AP.y << AP.z << " app " << glm::dot(AP, P) << endl;  
+			// cerr << "bp " << BP.x << BP.y << BP.z << endl;
+ 			// cerr << "cp " << CP.x << CP.y << CP.z << endl;
+
 			//calculate weights
 			alpha = glm::dot(AP, P) + Aw;
 			beta = glm::dot(BP, P) + Bw;
 			gamma = glm::dot(CP, P) + Cw;
-
-			//cerr << alpha << " " << beta << " " << gamma << endl;
 
 			//if intersection, weights all between 0 and 1
 			if (alpha >= 0 && beta >= 0 && gamma >= 0 && alpha <= 1 && beta <= 1 && gamma <= 1 ){
@@ -196,17 +222,12 @@ bool intersect(Ray ray) {
 					minT = t;
 					indexOfMinT = ind;
 				}
-				//cerr << "Intersected triangle " << ind+1 << ". HIT!!!" << endl;
-
 			}
-			//cerr << "didn't intersect triangle " << ind+1 << endl;
-			
 		} 
 		else if (obj.type == sphere)
 		{
-
 			float a, b, c, radius, pos, neg;
-			vec3 center;
+			vec3 center, P, n;
 
 			center = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z);
 
@@ -229,67 +250,84 @@ bool intersect(Ray ray) {
 
 			//determining what to do based on roots
 			//complex roots
-			if ( ( b*b - 4.0*a*c ) < 0 )
-			{
+			if ( ( b*b - 4.0*a*c ) < 0 ) {
 				continue;
 			}
 			//2 positive roots and not equal
-			else if (pos > 0 && neg > 0 && pos != neg)
-			{
+			else if (pos > 0 && neg > 0 && pos != neg){
 				//pick smaller root
-				if (pos>neg)
-				{
-					t = neg;	
-				} else {
-					t = pos;
-				}
+				if (pos>neg){ t = neg;	} 
+				else 		{ t = pos; 	}
 				hit = true;
 			} 
 			//roots are equal
-			else if (pos == neg)
-			{
+			else if (pos == neg){
 				t = pos;
 				hit = true;
 			}
 			// one positive, one negative root
-			else if ((pos > 0 && neg < 0) || (pos < 0 && neg > 0))
-			{
+			else if ((pos > 0 && neg < 0) || (pos < 0 && neg > 0)) {
 				// pick positive root
-				if (pos > 0)
-				{
-					t = pos;
-				} else	{
-					t = neg;
-				}
+				if (pos > 0){	t = pos;	} 
+				else		{	t = neg;	}
 				hit = true;
 			} 
+
+			//calculate intersection point & normal on sphere (not ellipse)
+			P = p0Transf + t * p1Transf;
+			n = centerTransf - P;
+
+			//transform point and normal back to world coords
+			objects[ind].point = vec3(obj.transform * vec4(P, 1));
+			objects[ind].point = vec3(glm::transpose(glm::inverse(obj.transform)) * vec4(n, 1));
 
 			//find if t was minimum
 			if(t>0 && (indexOfMinT==-1 || t < minT)){
 				hit = true;
 				minT = t;
 				indexOfMinT = ind;
-			}
-
-			
-		} else {
-			cerr << "Incorrect way to tell which type of object it is while intersecting in display.cpp\n";
+			}	
 		}
 	}
 
 	if(hit){
-		color.rgbRed = objects[indexOfMinT].ambient[0]*255.0;
-		color.rgbGreen = objects[indexOfMinT].ambient[1]*255.0;
-		color.rgbBlue = objects[indexOfMinT].ambient[2]*255.0;
-		return 1;
+		intersection = Intersection(objects[indexOfMinT].point, objects[indexOfMinT].normal, indexOfMinT);
+		return intersection;
 	}
 
-	color.rgbRed = 0.0;
-	color.rgbGreen = 0.0;
-	color.rgbBlue = 0.0;
-	return 0;
+	intersection = Intersection();
+	return intersection;
 }
 
+
+vec3 findColor(Intersection hit) {
+		/*
+			lightcolor = diffuse
+			object color = ambient
+		*/
+
+        float nDotL;
+        vec3 result, lambert; 
+        int indexOfMinT;
+        object obj;
+
+        indexOfMinT = hit.ind;
+
+        if (indexOfMinT >= 0)
+        {
+			result[0] = objects[indexOfMinT].ambient[0]*255.0;
+			result[1] = objects[indexOfMinT].ambient[1]*255.0;
+			result[2] = objects[indexOfMinT].ambient[2]*255.0;
+        }
+        else {
+			result[0] = 0.0;
+			result[1] = 0.0;
+			result[2] = 0.0;
+		}
+
+		return result;
+
+}
 
 
 

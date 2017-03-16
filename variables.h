@@ -72,12 +72,15 @@ EXTERN struct object {
   float emission[3] ; 
   float shininess ;
   mat4 transform ; 
+  vec3 point, normal;
   std::vector<vec4> shapeVertices;
 } objects[maxobjects] ;
 
 EXTERN int maxverts;
+EXTERN int maxvertexnorms;
 EXTERN int numVertices;
 EXTERN std::vector<vec4> vertices;
+EXTERN std::vector<vec4> vertexNormals;
 EXTERN char * fileName;
 
 
