@@ -341,9 +341,9 @@ vec3 findColor(Intersection hit) {
         	// 	//sumOfLighting = the whole formula;
         	// }
 
-			result[0] = objects[indexOfMinT].ambient[0]*255.0*s;
-			result[1] = objects[indexOfMinT].ambient[1]*255.0*s;
-			result[2] = objects[indexOfMinT].ambient[2]*255.0*s;
+			result[0] = objects[indexOfMinT].ambient[0]*255.0 + objects[indexOfMinT].emission[0]*255.0 + s * objects[indexOfMinT].diffuse[0]*255.0;
+			result[1] = objects[indexOfMinT].ambient[1]*255.0 + objects[indexOfMinT].emission[1]*255.0 + s * objects[indexOfMinT].diffuse[1]*255.0;
+			result[2] = objects[indexOfMinT].ambient[2]*255.0 + objects[indexOfMinT].emission[2]*255.0 + s * objects[indexOfMinT].diffuse[2]*255.0;
         }
         else {
 			result[0] = 0.0;
