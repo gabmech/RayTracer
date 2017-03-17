@@ -188,11 +188,6 @@ void readfile(const char* filename)
             }
             pointLights[numPointLights] = light;
             pointColors[numPointLights++] = color;
-
-            //Reese check 
-            attenuation[0] = 0;
-            attenuation[1] = 0;
-            attenuation[2] = 1;
           }
         }
         else if (cmd == "output")

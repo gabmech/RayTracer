@@ -23,7 +23,7 @@ vec3 findColor(Intersection);
 int isPointNotInShadow(int lightIndex, int indexOfMinT);
 int isDirectionalNotInShadow(int lightIndex, int indexOfMinT);
 float getMagnitude(vec3 vec);
-
+void printVec(vec3 vec, string str);
 
 vec3 _u, _v, _w;
 RGBQUAD color;
@@ -89,13 +89,6 @@ void display() {
     rayTrace(camera);
 }
 
-/*
-	questions:
-		- how do we draw the image?
-			freeImage
-		- what is the camera (eye?)
-			up, eye, and center vectors to construct cam... still not sure
-*/
 
 void rayTrace(vec3 camera) {
 
@@ -198,7 +191,7 @@ Intersection intersect(Ray ray) {
 			// cerr << "t: " << t << endl;
 
 			objects[ind].point = P;
-			objects[ind].normal = glm::cross(C-B, A-C);
+			objects[ind].normal = glm::normalize(glm::cross(C-B, A-C));
 			
 			//calculate barycentric coordinates
 			AP = (glm::cross(n, C-B)) / (glm::dot(glm::cross(n, C-B), A-C));
@@ -278,7 +271,7 @@ Intersection intersect(Ray ray) {
 
 			//calculate intersection point & normal on sphere (not ellipse)
 			P = p0Transf + t * p1Transf;
-			n = centerTransf - P;
+			n = glm::normalize(P - centerTransf);
 
 			//transform point and normal back to world coords
 			objects[ind].point = vec3(obj.transform * vec4(P, 1));
@@ -324,31 +317,50 @@ vec3 findColor(Intersection hit) {
         	// check all point lights
         	for (int lightIndex = 0; lightIndex < numPointLights; ++lightIndex)
         	{
-        		int inShadow;
+        		float distToLight, atten, notInShadow;
+        		vec3 res, half, dirToLight, intersectionPoint;
 
-        		inShadow = isPointNotInShadow(lightIndex, indexOfMinT); 
-        		//direction to light
-        		vec3 L = pointLights[lightIndex] - hit.point;
-        		vec3 half = (vec3(eye) - hit.point) + L;
+        		//find if intersection point in shadow
+        		notInShadow = (float)isPointNotInShadow(lightIndex, indexOfMinT);
 
-        		vec3 res = vec3();
+        		// calculate vector from intersection pt to light
+        		dirToLight = pointLights[lightIndex] - hit.point;
+        		half = (vec3(eye) - hit.point) + dirToLight;
+        		distToLight = getMagnitude(dirToLight);
+        		atten = 1.0 / (objects[hit.ind].attenuation[0] + objects[hit.ind].attenuation[1] * 
+        				distToLight + objects[hit.ind].attenuation[0] * pow(distToLight, 2));
 
-        		res.x = (objects[hit.ind].diffuse[0] * (max((float)glm::dot(hit.normal, L), (float)0.0)) + objects[hit.ind].specular[0] * (pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess)));
-        		res.y = (objects[hit.ind].diffuse[1] * (max((float)glm::dot(hit.normal, L), (float)0.0)) + objects[hit.ind].specular[1] * (pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess)));
-        		res.z = (objects[hit.ind].diffuse[2] * (max((float)glm::dot(hit.normal, L), (float)0.0)) + objects[hit.ind].specular[2] * (pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess)));
-        		s = inShadow;
+        		res = vec3(
+        			(float)(objects[hit.ind].diffuse[0]*255.0 * (max((float)glm::dot(hit.normal, dirToLight), (float)0.0)) + 
+        				objects[hit.ind].specular[0] * 
+        				(pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess))) * atten,
+        			(float)(objects[hit.ind].diffuse[1]*255.0 * (max((float)glm::dot(hit.normal, dirToLight), (float)0.0)) + 
+        				objects[hit.ind].specular[1] * 
+        				(pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess))) * atten,
+        			(float)(objects[hit.ind].diffuse[2]*255.0 * (max((float)glm::dot(hit.normal, dirToLight), (float)0.0)) + 
+        				objects[hit.ind].specular[2] * 
+        				(pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess))) * atten
+        		);
 
-        		//sumOfLighting = sumOfLighting + s*res;
+        		
+        		sumOfLighting = sumOfLighting + notInShadow*res;
+
 
         	}
+
+        	// cerr << "sumOfLighting: " << sumOfLighting.x << sumOfLighting.y << sumOfLighting.z << endl;
 
         	//check all directional lights
-        	for (int lightIndex = 0; lightIndex < numDirectionalLights; ++lightIndex)
-        	{
-        		int inShadow;
-        		inShadow = isDirectionalNotInShadow(lightIndex, indexOfMinT); 
-        		//sumOfLighting = the whole formula;
-        	}
+        	// for (int lightIndex = 0; lightIndex < numDirectionalLights; ++lightIndex)
+        	// {
+        	// 	int inShadow;
+        	// 	inShadow = isDirectionalNotInShadow(lightIndex, indexOfMinT); 
+        	// 	//sumOfLighting = the whole formula;
+        	// }
+
+			// cerr << "objects[indexOfMinT].ambient: " << objects[indexOfMinT].ambient[0] << objects[indexOfMinT].ambient[1] << objects[indexOfMinT].ambient[2] << endl;
+			// cerr << "objects[indexOfMinT].emission: " << objects[indexOfMinT].emission[0] << objects[indexOfMinT].emission[1] << objects[indexOfMinT].emission[2] << endl;
+
 
 			result[0] = objects[indexOfMinT].ambient[0]*255.0 + objects[indexOfMinT].emission[0]*255.0 + sumOfLighting.x;
 			// + s * objects[indexOfMinT].diffuse[0]*255.0;
@@ -356,6 +368,8 @@ vec3 findColor(Intersection hit) {
 			// + s * objects[indexOfMinT].diffuse[1]*255.0;
 			result[2] = objects[indexOfMinT].ambient[2]*255.0 + objects[indexOfMinT].emission[2]*255.0 + sumOfLighting.z;
 			// + s * objects[indexOfMinT].diffuse[2]*255.0;
+
+			// cerr << result.x << " " << result.y << " " << result.z << endl;
         }
         else {
 			result[0] = 0.0;
@@ -431,6 +445,10 @@ int isDirectionalNotInShadow(int lightIndex, int indexOfMinT) {
 
 float getMagnitude(vec3 vec) {
 	return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
+}
+
+void printVec(vec3 vec, string str){
+	cerr << str << ": " << vec.x << " " << vec.y << " " << vec.z << endl;
 }
 
 
