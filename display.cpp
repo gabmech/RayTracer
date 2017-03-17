@@ -327,23 +327,35 @@ vec3 findColor(Intersection hit) {
         		int inShadow;
 
         		inShadow = isPointNotInShadow(lightIndex, indexOfMinT); 
+        		//direction to light
+        		vec3 L = pointLights[lightIndex] - hit.point;
+        		vec3 half = (vec3(eye) - hit.point) + L;
 
+        		vec3 res = vec3();
+
+        		res.x = (objects[hit.ind].diffuse[0] * (max((float)glm::dot(hit.normal, L), (float)0.0)) + objects[hit.ind].specular[0] * (pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess)));
+        		res.y = (objects[hit.ind].diffuse[1] * (max((float)glm::dot(hit.normal, L), (float)0.0)) + objects[hit.ind].specular[1] * (pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess)));
+        		res.z = (objects[hit.ind].diffuse[2] * (max((float)glm::dot(hit.normal, L), (float)0.0)) + objects[hit.ind].specular[2] * (pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess)));
         		s = inShadow;
+
+        		//sumOfLighting = sumOfLighting + s*res;
+
         	}
 
-        	// //check all directional lights
-        	// for (int lightIndex = 0; lightIndex < numDirectionalLights; ++lightIndex)
-        	// {
-        	// 	int inShadow;
+        	//check all directional lights
+        	for (int lightIndex = 0; lightIndex < numDirectionalLights; ++lightIndex)
+        	{
+        		int inShadow;
+        		inShadow = isDirectionalNotInShadow(lightIndex, indexOfMinT); 
+        		//sumOfLighting = the whole formula;
+        	}
 
-        	// 	inShadow = isDirectionalNotInShadow(lightIndex, indexOfMinT); 
-
-        	// 	//sumOfLighting = the whole formula;
-        	// }
-
-			result[0] = objects[indexOfMinT].ambient[0]*255.0 + objects[indexOfMinT].emission[0]*255.0 + s * objects[indexOfMinT].diffuse[0]*255.0;
-			result[1] = objects[indexOfMinT].ambient[1]*255.0 + objects[indexOfMinT].emission[1]*255.0 + s * objects[indexOfMinT].diffuse[1]*255.0;
-			result[2] = objects[indexOfMinT].ambient[2]*255.0 + objects[indexOfMinT].emission[2]*255.0 + s * objects[indexOfMinT].diffuse[2]*255.0;
+			result[0] = objects[indexOfMinT].ambient[0]*255.0 + objects[indexOfMinT].emission[0]*255.0 + sumOfLighting.x;
+			// + s * objects[indexOfMinT].diffuse[0]*255.0;
+			result[1] = objects[indexOfMinT].ambient[1]*255.0 + objects[indexOfMinT].emission[1]*255.0 + sumOfLighting.y;
+			// + s * objects[indexOfMinT].diffuse[1]*255.0;
+			result[2] = objects[indexOfMinT].ambient[2]*255.0 + objects[indexOfMinT].emission[2]*255.0 + sumOfLighting.z;
+			// + s * objects[indexOfMinT].diffuse[2]*255.0;
         }
         else {
 			result[0] = 0.0;

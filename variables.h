@@ -57,6 +57,7 @@ EXTERN float ambient[3] ;
 EXTERN float diffuse[3] ; 
 EXTERN float specular[3] ; 
 EXTERN float emission[3] ; 
+EXTERN float attenuation[3] ; 
 EXTERN vec3 directionalLights[numLights] ; 
 EXTERN vec3 directionalColors[numLights] ; 
 EXTERN vec3 pointLights[numLights] ; 
@@ -74,6 +75,7 @@ EXTERN struct object {
   float specular[3] ;
   float emission[3] ; 
   float shininess ;
+  float attenuation[3];
   mat4 transform ; 
   vec3 point, normal;
   std::vector<vec4> shapeVertices;

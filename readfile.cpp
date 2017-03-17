@@ -95,6 +95,11 @@ void readfile(const char* filename)
         // Process the light, add it to database.
         // Lighting Command
 
+        //default Values of attenuation
+
+        attenuation[0] = 1;
+        attenuation[1] = 0;
+        attenuation[2] = 0;
         // Material Commands 
         // Ambient, diffuse, specular, shininess properties for each object.
         // Filling this in is pretty straightforward, so I've left it in 
@@ -133,6 +138,13 @@ void readfile(const char* filename)
           validinput = readvals(s, 1, values); 
           if (validinput) {
             shininess = values[0]; 
+          }
+        } else if (cmd == "attenuation") {
+          validinput = readvals(s, 3, values); 
+          if (validinput) {
+            for (i = 0; i < 3; i++) {
+              attenuation[i] = values[i]; 
+            }
           }
         } else if (cmd == "size") {
           validinput = readvals(s,2,values); 
@@ -176,6 +188,11 @@ void readfile(const char* filename)
             }
             pointLights[numPointLights] = light;
             pointColors[numPointLights++] = color;
+
+            //Reese check 
+            attenuation[0] = 0;
+            attenuation[1] = 0;
+            attenuation[2] = 1;
           }
         }
         else if (cmd == "output")
@@ -216,6 +233,9 @@ void readfile(const char* filename)
                 (obj->diffuse)[i] = diffuse[i]; 
                 (obj->specular)[i] = specular[i]; 
                 (obj->emission)[i] = emission[i];
+                if(i<3){
+                  (obj->attenuation)[i] = attenuation[i];
+                }
               }
               obj->shininess = shininess; 
 
@@ -245,6 +265,9 @@ void readfile(const char* filename)
                 (obj->diffuse)[i] = diffuse[i]; 
                 (obj->specular)[i] = specular[i]; 
                 (obj->emission)[i] = emission[i];
+                if(i<3){
+                  (obj->attenuation)[i] = attenuation[i];
+                }
               }
               obj->shininess = shininess; 
 
