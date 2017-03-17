@@ -110,8 +110,8 @@ void rayTrace(vec3 camera) {
 			vec3 direction, foundColor;
 			Intersection hit;
 
-			// float x = 105;
-			// float y = 250;
+			// float x = 453;
+			// float y = 361;
 
 			//generate weights
 			fovx = 2.0 * (atan(tan(fovy/2.0) * (float)w/h));
@@ -284,7 +284,7 @@ Intersection intersect(Ray ray) {
 vec3 findColor(Intersection hit, int depth, vec3 eye) {
 
         float red, green, blue;
-        vec3 result, lambert, intersectionPoint, reflective, reflectiveDirection, reflectedColor; 
+        vec3 result, lambert, intersectionPoint, reflective, reflectiveDirection, reflectedColor, incomingRay, normal; 
         int indexOfMinT;
         object obj;
         Intersection reflectiveHit;
@@ -396,18 +396,31 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
 			//calculate new recursive hit point from pt of intersection's mirror direction
 			intersectionPoint = objects[indexOfMinT].point + objects[indexOfMinT].normal*(float)0.00001;
 			//calculate ray direction
-			reflectiveDirection = ;
+			incomingRay = intersectionPoint - eye;
+			normal = objects[indexOfMinT].normal;
+
+			reflectiveDirection = incomingRay - (float)2.0 * ( (float)glm::dot(incomingRay, normal) ) * normal;
 
 			//shoot new ray to calculate reflective lighting
 			Ray reflectiveRay(intersectionPoint, reflectiveDirection);
 			reflectiveHit = intersect(reflectiveRay);
+
+			//when we fail to intersect an object, don't add anything to object
+			if (reflectiveHit.ind == -1)
+			{
+				return vec3(0,0,0);
+			}
+
+			//recursive call
 			reflectedColor = findColor(reflectiveHit, depth+1, intersectionPoint);
 
 			// calculate sum of reflected colors on this object
-			reflective = vec3( 	objects[indexOfMinT].specular[0] * reflectedColor[0] * 255.0, 
-								objects[indexOfMinT].specular[1] * reflectedColor[1] * 255.0, 
-								objects[indexOfMinT].specular[2] * reflectedColor[2] * 255.0  );
+			reflective = vec3( 	objects[indexOfMinT].specular[0] * reflectedColor[0], 
+								objects[indexOfMinT].specular[1] * reflectedColor[1], 
+								objects[indexOfMinT].specular[2] * reflectedColor[2]  );
 
+			printVec(reflective, "reflective");
+			//printVec(reflective, "reflected color");
         }
         else {
 			result[0] = 0.0;
@@ -417,8 +430,30 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
 			reflective = vec3(0,0,0);
 		}
 
+		// cerr << depth << " result before add: ";
+		// printVec(result, "");
+		// cerr << depth << " reflective before add: ";
+		// printVec(reflective, "");
 
-		return result + reflective;
+		result = result + reflective;
+
+		// cerr << depth << " result after add";
+		// printVec(result, "result");
+		// cerr << endl;
+
+		//clip results
+    	red = result[0] > 255 ? 255: result[0];
+    	green = result[1] > 255 ? 255: result[1];
+    	blue = result[2] > 255 ? 255: result[2];
+
+    	//save clipped colors
+		result[0] = red;
+		result[1] = green;
+		result[2] = blue;
+
+
+
+		return result;
 
 }
 
