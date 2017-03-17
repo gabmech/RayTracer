@@ -20,10 +20,12 @@ pushTransform
 translate -10 0 0
 sphere 0 0 0 0.4
 popTransform
+
 pushTransform
 translate -10 0 -1
 sphere 0 0 0 0.4
 popTransform
+
 pushTransform
 translate -10 0 -2
 sphere 0 0 0 0.4

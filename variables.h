@@ -63,7 +63,7 @@ EXTERN vec3 pointColors[numLights] ;
 EXTERN float shininess ; 
 
 // For multiple objects, read from a file.  
-const int maxobjects = 100 ; 
+const int maxobjects = 1000 ; 
 EXTERN int numobjects ; 
 EXTERN struct object {
   shape type ; 

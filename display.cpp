@@ -77,10 +77,10 @@ void display() {
 
     //construct the camera
 	_w = glm::normalize(eye-center);        	// eye
-	_u = glm::normalize(glm::cross(up, _w)); 	// direction from eye to center
+	_u = glm::normalize( glm::cross(up, _w) ); 	// direction from eye to center
 	_v = glm::cross(_w, _u);                  	// up direction
 
-	vec3 camera = vec3 (eye);
+	vec3 camera = glm::normalize( vec3(eye) );
 
 	//cerr << "center: " << center.x <<center.y <<center.z << " eye: " << eye.x << eye.y<< eye.z << " up: " << up.x << up.y<< up.z<< endl;
 
