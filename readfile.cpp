@@ -96,10 +96,12 @@ void readfile(const char* filename)
         // Lighting Command
 
         //default Values of attenuation
-
         attenuation[0] = 1;
         attenuation[1] = 0;
         attenuation[2] = 0;
+
+        //default values of maxDepth
+        maxDepth = 5;
         // Material Commands 
         // Ambient, diffuse, specular, shininess properties for each object.
         // Filling this in is pretty straightforward, so I've left it in 
@@ -193,6 +195,12 @@ void readfile(const char* filename)
         else if (cmd == "output")
         {
           s >> fileName;
+        }
+        else if (cmd == "maxdepth"){
+          validinput = readvals(s, 1, values);
+          if(validinput){
+            maxDepth = values[0];
+          }
         }
         else if (cmd == "camera") {
           validinput = readvals(s,10,values); // 10 values eye cen up fov

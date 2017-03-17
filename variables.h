@@ -46,10 +46,8 @@ EXTERN float tx, ty ; // the translation in x and y
 // Lighting parameter array, similar to that in the fragment shader
 const int numLights = 10 ; 
 EXTERN int numPointLights;
+EXTERN int maxDepth;
 EXTERN int numDirectionalLights;
-EXTERN float lightposn [4*numLights] ; // Light Positions
-EXTERN float lightcolor[4*numLights] ; // Light Colors
-EXTERN float lightransf[4*numLights] ; // Lights transformed by modelview
 
 // Materials (read from file) 
 // With multiple objects, these are colors for each.

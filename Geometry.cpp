@@ -26,7 +26,7 @@ Triangle::Triangle(vec3 p_0, vec3 p_1, vec3 p_2)  {
 
 
 Intersection::Intersection(vec3 p, vec3 n, int i) {
-	normal = n;
+	normal = glm::normalize(n);
 	point = p;
 	ind = i;
 }
