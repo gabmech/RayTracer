@@ -110,8 +110,8 @@ void rayTrace(vec3 camera) {
 			vec3 direction, foundColor;
 			Intersection hit;
 
-			// float x = 0;
-			// float y = 0;
+			// float x = 315;
+			// float y = 380;
 
 			//generate weights
 			fovx = 2.0 * (atan(tan(fovy/2.0) * (float)w/h));
@@ -185,11 +185,6 @@ Intersection intersect(Ray ray) {
 			t = ((float)(glm::dot(A, n) - glm::dot(ray.p0, n))) / (float)(glm::dot(ray.p1, n));
 			P = ray.p0 + ray.p1 * t;
 
-			// cerr << "P: " << P.x << P.y << P.z << endl;
-			// cerr << "P0: " << ray.p0.x << ray.p0.y << ray.p0.z << endl;
-			// cerr << "P1: " << ray.p1.x << ray.p1.y << ray.p1.z << endl;
-			// cerr << "t: " << t << endl;
-
 			objects[ind].point = P;
 			objects[ind].normal = glm::normalize(glm::cross(C-B, A-C));
 			
@@ -200,10 +195,6 @@ Intersection intersect(Ray ray) {
 			Bw = glm::dot(BP, A) * -1;
 			CP = (glm::cross(n, B-A)) / (glm::dot(glm::cross(n, B-A), C-B));
 			Cw = glm::dot(CP, B) * -1;
-
-			// cerr << "ap " << AP.x << AP.y << AP.z << " app " << glm::dot(AP, P) << endl;  
-			// cerr << "bp " << BP.x << BP.y << BP.z << endl;
- 			// cerr << "cp " << CP.x << CP.y << CP.z << endl;
 
 			//calculate weights
 			alpha = glm::dot(AP, P) + Aw;
@@ -225,15 +216,15 @@ Intersection intersect(Ray ray) {
 			float a, b, c, radius, pos, neg;
 			vec3 center, P, n;
 
+			//extract center
 			center = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z);
+			radius = obj.shapeVertices[0].w;
 
+			//cast to appropriate types
 			mat4 inverseTransf = inverse(obj.transform);
 			vec3 p0Transf = vec3(inverseTransf * vec4(ray.p0,1.0));
 			vec3 p1Transf = vec3(inverseTransf * vec4(ray.p1,0.0));
 			vec3 centerTransf = vec3(inverseTransf * vec4(center,1.0));
-
-			// extract center
-			radius = obj.shapeVertices[0].w;
 
 			// calculating a,b,c to be used on quadratic equation
 			a = glm::dot(p1Transf, p1Transf);
@@ -302,7 +293,7 @@ vec3 findColor(Intersection hit) {
 			object color = ambient
 		*/
 
-        float nDotL;
+        float red, green, blue;
         vec3 result, lambert; 
         int indexOfMinT;
         object obj;
@@ -317,35 +308,36 @@ vec3 findColor(Intersection hit) {
         	// check all point lights
         	for (int lightIndex = 0; lightIndex < numPointLights; ++lightIndex)
         	{
-        		float distToLight, atten, notInShadow;
-        		vec3 res, half, dirToLight, intersectionPoint;
+        		float distToLight, atten, notInShadow, nDotL, nDotH;
+        		vec3 res, half, dirToLight, intersectionPoint, myDiffuse, phong, lambert, lightColor, mySpecular;
 
         		//find if intersection point in shadow
         		notInShadow = (float)isPointNotInShadow(lightIndex, indexOfMinT);
 
         		// calculate vector from intersection pt to light
         		dirToLight = pointLights[lightIndex] - hit.point;
-        		half = (vec3(eye) - hit.point) + dirToLight;
+        		half = glm::normalize((vec3(eye) - hit.point) + dirToLight);
         		distToLight = getMagnitude(dirToLight);
-        		atten = 1.0 / (objects[hit.ind].attenuation[0] + objects[hit.ind].attenuation[1] * 
-        				distToLight + objects[hit.ind].attenuation[0] * pow(distToLight, 2));
+        		atten = (float)1.0 / (objects[hit.ind].attenuation[0] + objects[hit.ind].attenuation[1] * 
+        				distToLight + objects[hit.ind].attenuation[2] * pow(distToLight, 2));
+        		lightColor = pointColors[lightIndex];
 
-        		res = vec3(
-        			(float)(objects[hit.ind].diffuse[0]*255.0 * (max((float)glm::dot(hit.normal, dirToLight), (float)0.0)) + 
-        				objects[hit.ind].specular[0] * 
-        				(pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess))) * atten,
-        			(float)(objects[hit.ind].diffuse[1]*255.0 * (max((float)glm::dot(hit.normal, dirToLight), (float)0.0)) + 
-        				objects[hit.ind].specular[1] * 
-        				(pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess))) * atten,
-        			(float)(objects[hit.ind].diffuse[2]*255.0 * (max((float)glm::dot(hit.normal, dirToLight), (float)0.0)) + 
-        				objects[hit.ind].specular[2] * 
-        				(pow(max((float)glm::dot(hit.normal, half), (float)0.0), objects[hit.ind].shininess))) * atten
-        		);
+        		//lambert
+        		myDiffuse = (float)255.0 * vec3(objects[hit.ind].diffuse[0],objects[hit.ind].diffuse[1],objects[hit.ind].diffuse[2]);
+        		nDotL = glm::dot(hit.normal, dirToLight);
+        		lambert = myDiffuse * max(nDotL, (float)0.0);
 
+        		//phong
+        		mySpecular = (float)255.0 * vec3(objects[hit.ind].specular[0],objects[hit.ind].specular[1],objects[hit.ind].specular[2]);;
+        		nDotH = glm::dot(hit.normal, half);
+        		shininess = objects[hit.ind].shininess;
+        		phong = mySpecular * pow( max(nDotH, (float)0.0), shininess );
+
+        		//summation part 
+        		res = vec3( (lambert + phong) * atten );
         		
+        		//increment lighting sum so far
         		sumOfLighting = sumOfLighting + notInShadow*res;
-
-
         	}
 
         	// cerr << "sumOfLighting: " << sumOfLighting.x << sumOfLighting.y << sumOfLighting.z << endl;
@@ -360,22 +352,28 @@ vec3 findColor(Intersection hit) {
 
 			// cerr << "objects[indexOfMinT].ambient: " << objects[indexOfMinT].ambient[0] << objects[indexOfMinT].ambient[1] << objects[indexOfMinT].ambient[2] << endl;
 			// cerr << "objects[indexOfMinT].emission: " << objects[indexOfMinT].emission[0] << objects[indexOfMinT].emission[1] << objects[indexOfMinT].emission[2] << endl;
+        	red = objects[indexOfMinT].ambient[0]*255.0 + objects[indexOfMinT].emission[0]*255.0 + sumOfLighting.x;
+        	red = red > 255 ? 255: red;
+        	green = objects[indexOfMinT].ambient[1]*255.0 + objects[indexOfMinT].emission[1]*255.0 + sumOfLighting.y;
+        	green = green > 255 ? 255: green;
+        	blue = objects[indexOfMinT].ambient[2]*255.0 + objects[indexOfMinT].emission[2]*255.0 + sumOfLighting.z;
+        	blue = blue > 255 ? 255: blue;
 
+			// result[0] = objects[indexOfMinT].ambient[0]*255.0 + objects[indexOfMinT].emission[0]*255.0 + sumOfLighting.x;
+			// result[1] = objects[indexOfMinT].ambient[1]*255.0 + objects[indexOfMinT].emission[1]*255.0 + sumOfLighting.y;
+			// result[2] = objects[indexOfMinT].ambient[2]*255.0 + objects[indexOfMinT].emission[2]*255.0 + sumOfLighting.z;
+			result[0] = red;
+			result[1] = green;
+			result[2] = blue;
 
-			result[0] = objects[indexOfMinT].ambient[0]*255.0 + objects[indexOfMinT].emission[0]*255.0 + sumOfLighting.x;
-			// + s * objects[indexOfMinT].diffuse[0]*255.0;
-			result[1] = objects[indexOfMinT].ambient[1]*255.0 + objects[indexOfMinT].emission[1]*255.0 + sumOfLighting.y;
-			// + s * objects[indexOfMinT].diffuse[1]*255.0;
-			result[2] = objects[indexOfMinT].ambient[2]*255.0 + objects[indexOfMinT].emission[2]*255.0 + sumOfLighting.z;
-			// + s * objects[indexOfMinT].diffuse[2]*255.0;
-
-			// cerr << result.x << " " << result.y << " " << result.z << endl;
+			//printVec(result, "result ");
         }
         else {
 			result[0] = 0.0;
 			result[1] = 0.0;
 			result[2] = 0.0;
 		}
+
 
 		return result;
 
@@ -387,7 +385,7 @@ int isPointNotInShadow(int lightIndex, int indexOfMinT) {
 	Intersection objectHit = Intersection();
 
 	//create ray
-	intersectionPoint = objects[indexOfMinT].point;
+	intersectionPoint = objects[indexOfMinT].point + objects[indexOfMinT].normal*(float)0.1;
 	direction = pointLights[lightIndex] - intersectionPoint;
 	normalizedDirection = glm::normalize(direction);
 	Ray ray(intersectionPoint, normalizedDirection);
@@ -398,6 +396,7 @@ int isPointNotInShadow(int lightIndex, int indexOfMinT) {
 	if (objectHit.ind == -1)
 	{
 		//not in shadow
+		// cerr << "not in shadow\n";
 		return 1;
 	}
 
@@ -408,10 +407,12 @@ int isPointNotInShadow(int lightIndex, int indexOfMinT) {
 	if (getMagnitude(direction) > getMagnitude(objectVec))
 	{
 		// in shadow
+		// cerr << "in shadow\n";
 		return 0;
 	}
 
 	//not in shadow
+	// cerr << "not in shadow\n";
 	return 1;
 
 }
