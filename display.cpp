@@ -110,8 +110,8 @@ void rayTrace(vec3 camera) {
 			vec3 direction, foundColor;
 			Intersection hit;
 
-			// float x = 453;
-			// float y = 361;
+			// float x = 437;
+			// float y = 215;
 
 			//generate weights
 			fovx = 2.0 * (atan(tan(fovy/2.0) * (float)w/h));
@@ -129,6 +129,8 @@ void rayTrace(vec3 camera) {
 			hit = intersect(ray);
 			foundColor = findColor(hit, 1, camera);
 
+
+			// printVec(foundColor, "Found Color!");
 			color.rgbRed = foundColor[0];
 			color.rgbGreen = foundColor[1];
 			color.rgbBlue = foundColor[2];
@@ -260,7 +262,7 @@ Intersection intersect(Ray ray) {
 
 			//transform point and normal back to world coords
 			objects[ind].point = vec3(obj.transform * vec4(P, 1));
-			objects[ind].normal = vec3(inverse(transpose(obj.transform)) * vec4(n, 1));
+			objects[ind].normal = vec3(inverse(transpose(obj.transform)) * vec4(n, 0));//changed from 1 to 0
 
 			//find if t was minimum
 			if(t>0 && (indexOfMinT==-1 || t < minT)){
@@ -322,12 +324,12 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
         		lightColor = pointColors[lightIndex];
 
         		//lambert
-        		myDiffuse = (float)255.0 * vec3(objects[hit.ind].diffuse[0],objects[hit.ind].diffuse[1],objects[hit.ind].diffuse[2]);
+        		myDiffuse = (float)255.0 * vec3(objects[hit.ind].diffuse[0] * lightColor.x,objects[hit.ind].diffuse[1] * lightColor.y,objects[hit.ind].diffuse[2] * lightColor.z);
         		nDotL = glm::dot(hit.normal, dirToLight);
         		lambert = myDiffuse * max(nDotL, (float)0.0);
 
         		//phong
-        		mySpecular = (float)255.0 * vec3(objects[hit.ind].specular[0],objects[hit.ind].specular[1],objects[hit.ind].specular[2]);;
+        		mySpecular = (float)255.0 * vec3(objects[hit.ind].specular[0] * lightColor.x,objects[hit.ind].specular[1] * lightColor.y,objects[hit.ind].specular[2] * lightColor.z);;
         		nDotH = glm::dot(hit.normal, half);
         		shininess = objects[hit.ind].shininess;
         		phong = mySpecular * pow( max(nDotH, (float)0.0), shininess );
@@ -358,12 +360,12 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
         		lightColor = directionalColors[lightIndex];
 
         		//lambert
-        		myDiffuse = (float)255.0 * vec3(objects[hit.ind].diffuse[0],objects[hit.ind].diffuse[1],objects[hit.ind].diffuse[2]);
+        		myDiffuse = (float)255.0 * vec3(objects[hit.ind].diffuse[0] * lightColor.x,objects[hit.ind].diffuse[1] * lightColor.y,objects[hit.ind].diffuse[2] * lightColor.z);
         		nDotL = glm::dot(hit.normal, dirToLight);
         		lambert = myDiffuse * max(nDotL, (float)0.0);
 
         		//phong
-        		mySpecular = (float)255.0 * vec3(objects[hit.ind].specular[0],objects[hit.ind].specular[1],objects[hit.ind].specular[2]);;
+        		mySpecular = (float)255.0 * vec3(objects[hit.ind].specular[0] * lightColor.x,objects[hit.ind].specular[1] * lightColor.y,objects[hit.ind].specular[2] * lightColor.z);;
         		nDotH = glm::dot(hit.normal, half);
         		shininess = objects[hit.ind].shininess;
         		phong = mySpecular * pow( max(nDotH, (float)0.0), shininess );
@@ -396,10 +398,12 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
 			//calculate new recursive hit point from pt of intersection's mirror direction
 			intersectionPoint = objects[indexOfMinT].point + objects[indexOfMinT].normal*(float)0.00001;
 			//calculate ray direction
-			incomingRay = intersectionPoint - eye;
+			incomingRay = glm::normalize(intersectionPoint - eye);
+
+			//eye = intersectionPoint; // reese check
 			normal = objects[indexOfMinT].normal;
 
-			reflectiveDirection = incomingRay - (float)2.0 * ( (float)glm::dot(incomingRay, normal) ) * normal;
+			reflectiveDirection = glm::normalize(incomingRay - (float)2.0 * ( (float)glm::dot(incomingRay, normal) ) * normal);
 
 			//shoot new ray to calculate reflective lighting
 			Ray reflectiveRay(intersectionPoint, reflectiveDirection);
@@ -408,18 +412,18 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
 			//when we fail to intersect an object, don't add anything to object
 			if (reflectiveHit.ind == -1)
 			{
-				return vec3(0,0,0);
+				return result;//vec3(0,0,0); reese check
 			}
 
 			//recursive call
 			reflectedColor = findColor(reflectiveHit, depth+1, intersectionPoint);
 
 			// calculate sum of reflected colors on this object
-			reflective = vec3( 	objects[indexOfMinT].specular[0] * reflectedColor[0], 
-								objects[indexOfMinT].specular[1] * reflectedColor[1], 
-								objects[indexOfMinT].specular[2] * reflectedColor[2]  );
+			reflective = vec3( 	objects[reflectiveHit.ind].specular[0] * reflectedColor[0], 
+								objects[reflectiveHit.ind].specular[1] * reflectedColor[1], 
+								objects[reflectiveHit.ind].specular[2] * reflectedColor[2]  );
 
-			printVec(reflective, "reflective");
+			// printVec(reflective, "reflective");
 			//printVec(reflective, "reflected color");
         }
         else {
