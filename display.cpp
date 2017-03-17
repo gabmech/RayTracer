@@ -80,7 +80,7 @@ void display() {
 	_u = glm::normalize( glm::cross(up, _w) ); 	// direction from eye to center
 	_v = glm::cross(_w, _u);                  	// up direction
 
-	vec3 camera = glm::normalize( vec3(eye) );
+	vec3 camera = vec3(eye);
 
 	//cerr << "center: " << center.x <<center.y <<center.z << " eye: " << eye.x << eye.y<< eye.z << " up: " << up.x << up.y<< up.z<< endl;
 
@@ -122,11 +122,7 @@ void rayTrace(vec3 camera) {
 			direction = vec3( alpha*_u + beta*_v - _w );
 			direction = glm::normalize(direction);
 
-			// cerr << "fovx: " << fovx << endl;
-			// cerr << "alpha: " << alpha << endl;
-			// cerr << "beta: " << beta << endl;
-			// cerr << "fovy: " << fovy << endl;
-
+			//draw ray
 			Ray ray(camera, direction);	
 
 			// find out if ray intersects object geometry
@@ -136,8 +132,6 @@ void rayTrace(vec3 camera) {
 			color.rgbRed = foundColor[0];
 			color.rgbGreen = foundColor[1];
 			color.rgbBlue = foundColor[2];
-
-			//cerr << foundColor[0] << " " << foundColor[1] << " " << foundColor[2] << endl;
 
 			FreeImage_SetPixelColor(bitmap, x, y, &color);			
 
@@ -218,7 +212,7 @@ Intersection intersect(Ray ray) {
 
 			//extract center
 			center = vec3(obj.shapeVertices[0].x, obj.shapeVertices[0].y, obj.shapeVertices[0].z);
-			radius = obj.shapeVertices[0].w;
+			radius = obj.radius;
 
 			//cast to appropriate types
 			mat4 inverseTransf = inverse(obj.transform);
@@ -295,11 +289,13 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
         object obj;
         Intersection reflectiveHit;
 
+        //recursive base case
         if (depth > maxDepth)
         {
         	return vec3(0,0,0);
         }
 
+        //index of intersected object
         indexOfMinT = hit.ind;
 
         if (indexOfMinT >= 0)

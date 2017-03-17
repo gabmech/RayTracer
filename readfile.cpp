@@ -247,7 +247,8 @@ void readfile(const char* filename)
 
               obj->type = sphere; 
 
-              vec4 sphere = vec4( values[0], values[1], values[2], values[3] );
+              vec4 sphere = vec4( values[0], values[1], values[2], 1);
+              obj->radius = values[3];
                 
               obj->shapeVertices.push_back( sphere );
               

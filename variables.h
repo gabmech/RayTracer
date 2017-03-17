@@ -68,6 +68,7 @@ EXTERN int numobjects ;
 EXTERN struct object {
   shape type ; 
   float size ;
+  float radius;
   float ambient[3] ; 
   float diffuse[3] ; 
   float specular[3] ;
