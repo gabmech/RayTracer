@@ -1,0 +1,16 @@
+
+
+size 640 480 
+
+output sceneCustom.png
+camera 0 0 0 0 0 -0.98 0 1 0 45
+
+
+ambient 0 1 0
+diffuse 0 0 0
+shininess 20
+emission 0 0 0
+
+
+specular 1 0 0 
+sphere 0 0 -2 0.4

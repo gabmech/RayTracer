@@ -80,6 +80,8 @@ EXTERN struct object {
   std::vector<vec4> shapeVertices;
 } objects[maxobjects] ;
 
+
+
 EXTERN int maxverts;
 EXTERN int maxvertexnorms;
 EXTERN int numVertices;

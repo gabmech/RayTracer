@@ -106,12 +106,17 @@ void rayTrace(vec3 camera) {
 	{
 		for (float x = 0.5; x < w; ++x)
 		{
+			// if(x != (float)w / 2.0 - 0.5){
+			// 	continue;
+			// }
 			float fovx, beta, alpha;
 			vec3 direction, foundColor;
 			Intersection hit;
 
-			// float x = 437;
-			// float y = 215;
+			// float x = w/(float)2.0;
+			// float y = h/(float)2.0;
+
+
 
 			//generate weights
 			fovx = 2.0 * (atan(tan(fovy/2.0) * (float)w/h));
@@ -129,6 +134,7 @@ void rayTrace(vec3 camera) {
 			hit = intersect(ray);
 			foundColor = findColor(hit, 1, camera);
 
+			//foundColor = vec3(abs(hit.normal[0]) * 255.0, abs(hit.normal[1]) * 255.0, abs(hit.normal[2]) * 255.0);
 
 			// printVec(foundColor, "Found Color!");
 			color.rgbRed = foundColor[0];
@@ -183,7 +189,7 @@ Intersection intersect(Ray ray) {
 
 			objects[ind].point = P;
 			objects[ind].normal = glm::normalize(glm::cross(C-B, A-C));
-			
+						
 			//calculate barycentric coordinates
 			AP = (glm::cross(n, C-B)) / (glm::dot(glm::cross(n, C-B), A-C));
 			Aw = glm::dot(AP, C) * -1;
@@ -218,8 +224,12 @@ Intersection intersect(Ray ray) {
 
 			//cast to appropriate types
 			mat4 inverseTransf = inverse(obj.transform);
-			vec3 p0Transf = vec3(inverseTransf * vec4(ray.p0,1.0));
+			vec4 p0Transfv4 = vec4(inverseTransf * vec4(ray.p0,1.0));
+			vec3 p0Transf = vec3((float)p0Transfv4.x/p0Transfv4.w,(float)p0Transfv4.y/p0Transfv4.w,(float)p0Transfv4.z/p0Transfv4.w);
+			
 			vec3 p1Transf = vec3(inverseTransf * vec4(ray.p1,0.0));
+			//vec3 p1Transf = vec3((float)p1Transfv4.x/p1Transfv4.w,(float)p1Transfv4.y/p1Transfv4.w,(float)p1Transfv4.z/p1Transfv4.w);
+		
 			vec3 centerTransf = vec3(inverseTransf * vec4(center,1.0));
 
 			// calculating a,b,c to be used on quadratic equation
@@ -258,11 +268,21 @@ Intersection intersect(Ray ray) {
 
 			//calculate intersection point & normal on sphere (not ellipse)
 			P = p0Transf + t * p1Transf;
-			n = glm::normalize(P - centerTransf);
+
+			//REESE CHECK, but pretty sure, long piazza post
+			//n = glm::normalize(P - centerTransf);
+			n = glm::normalize(P - center);
 
 			//transform point and normal back to world coords
-			objects[ind].point = vec3(obj.transform * vec4(P, 1));
-			objects[ind].normal = vec3(inverse(transpose(obj.transform)) * vec4(n, 0));//changed from 1 to 0
+			vec4 point1 =  vec4(obj.transform * vec4(P, 1.0));
+			objects[ind].point = vec3((float)point1.x/point1.w,(float)point1.y/point1.w,(float)point1.z/point1.w );
+			//objects[ind].point = vec3(obj.transform * vec4(P, 1));
+
+
+			// if(getMagnitude(objects[ind].normal) != 1){
+				objects[ind].normal = glm::normalize(vec3(inverse(transpose(obj.transform)) * vec4(n, 0)));//changed from 1 to 0
+			// }
+
 
 			//find if t was minimum
 			if(t>0 && (indexOfMinT==-1 || t < minT)){
@@ -400,10 +420,10 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
 			//calculate ray direction
 			incomingRay = glm::normalize(intersectionPoint - eye);
 
-			//eye = intersectionPoint; // reese check
 			normal = objects[indexOfMinT].normal;
 
 			reflectiveDirection = glm::normalize(incomingRay - (float)2.0 * ( (float)glm::dot(incomingRay, normal) ) * normal);
+			//reflectiveDirection = glm::normalize(rayDirection - (float)2.0 * ( (float)glm::dot(rayDirection, normal) ) * normal);
 
 			//shoot new ray to calculate reflective lighting
 			Ray reflectiveRay(intersectionPoint, reflectiveDirection);
@@ -419,12 +439,9 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
 			reflectedColor = findColor(reflectiveHit, depth+1, intersectionPoint);
 
 			// calculate sum of reflected colors on this object
-			reflective = vec3( 	objects[reflectiveHit.ind].specular[0] * reflectedColor[0], 
-								objects[reflectiveHit.ind].specular[1] * reflectedColor[1], 
-								objects[reflectiveHit.ind].specular[2] * reflectedColor[2]  );
-
-			// printVec(reflective, "reflective");
-			//printVec(reflective, "reflected color");
+			reflective = vec3( 	objects[hit.ind].specular[0] * reflectedColor[0], 
+								objects[hit.ind].specular[1] * reflectedColor[1], 
+								objects[hit.ind].specular[2] * reflectedColor[2]  );
         }
         else {
 			result[0] = 0.0;
@@ -438,6 +455,7 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
 		// printVec(result, "");
 		// cerr << depth << " reflective before add: ";
 		// printVec(reflective, "");
+
 
 		result = result + reflective;
 

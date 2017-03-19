@@ -80,6 +80,15 @@ void readfile(const char* filename)
     stack <mat4> transfstack; 
     transfstack.push(mat4(1.0));  // identity
 
+
+        //default Values of attenuation
+        attenuation[0] = 1;
+        attenuation[1] = 0;
+        attenuation[2] = 0;
+
+        //default values of maxDepth
+        maxDepth = 5;
+
     getline (in, str); 
     while (in) {
       if ((str.find_first_not_of(" \t\r\n") != string::npos) && (str[0] != '#')) {
@@ -95,13 +104,7 @@ void readfile(const char* filename)
         // Process the light, add it to database.
         // Lighting Command
 
-        //default Values of attenuation
-        attenuation[0] = 1;
-        attenuation[1] = 0;
-        attenuation[2] = 0;
 
-        //default values of maxDepth
-        maxDepth = 5;
         // Material Commands 
         // Ambient, diffuse, specular, shininess properties for each object.
         // Filling this in is pretty straightforward, so I've left it in 
