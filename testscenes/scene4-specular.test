@@ -14,7 +14,7 @@ diffuse 0 0 0
 shininess 20
 emission 0 0 0
 
-
+ 
 maxverts 8
 
 vertex -1 -1 -1
