@@ -106,10 +106,13 @@ void rayTrace(vec3 camera) {
 			vec3 direction, foundColor;
 			Intersection hit;
 
-			if (x < 160 && x > 165)
+			if (x < 400 || x > 410)
 			{
 				continue;
 			}
+
+			// float x = 160.5;
+			// float y = 458.5;
 
 			//generate weights
 			fovx = 2.0 * (atan(tan(fovy/2.0) * (float)w/h));
@@ -128,6 +131,8 @@ void rayTrace(vec3 camera) {
 			foundColor = findColor(hit, 1, camera);
 
 			//foundColor = vec3(abs(hit.normal[0]) * 255.0, abs(hit.normal[1]) * 255.0, abs(hit.normal[2]) * 255.0);
+
+			// cerr << x << ", " << y << ": " << foundColor[0] << " "<< foundColor[1] << " "<< foundColor[2] << endl;
 
 			// printVec(foundColor, "Found Color!");
 			color.rgbRed = foundColor[0];
@@ -270,7 +275,7 @@ Intersection intersect(Ray ray) {
 
 			//REESE CHECK, but pretty sure, long piazza post
 			//n = glm::normalize(P - centerTransf);
-			n = glm::normalize(P - center);
+			n = glm::normalize(P - centerTransf);
 
 			//transform point and normal back to world coords
 			vec4 point1 =  vec4(obj.transform * vec4(P, 1.0));
@@ -356,6 +361,7 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
         		//summation part 
         		res = vec3( (lambert + phong) * atten );
         		
+        		//cerr << depth << " - point not in shadow: " << notInShadow << endl;
         		//increment lighting sum so far
         		sumOfLighting = sumOfLighting + notInShadow*res;
         	}
@@ -396,6 +402,12 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
 
         		//summation part 
         		res = vec3( (lambert + phong) * atten );
+
+        		if (depth > 1 && notInShadow == 1)
+        		{
+        				cerr << "directional in shadow" << endl;
+        		}
+        		//cerr << depth << " - directional not in shadow: " << notInShadow << endl;
         		
         		//increment lighting sum so far
         		sumOfLighting = sumOfLighting + notInShadow*res;
@@ -415,7 +427,7 @@ vec3 findColor(Intersection hit, int depth, vec3 eye) {
 			result[2] = blue;
 
 			//calculate new recursive hit point from pt of intersection's mirror direction
-			intersectionPoint = objects[indexOfMinT].point + objects[indexOfMinT].normal*(float)0.00001;
+			intersectionPoint = objects[indexOfMinT].point + hit.normal*(float)0.00001;
 			//calculate ray direction
 			incomingRay = glm::normalize(intersectionPoint - eye);
 
@@ -492,6 +504,8 @@ int isPointNotInShadow(int lightIndex, int indexOfMinT) {
 	//intersect ray with objects 
 	objectHit = intersect(ray);
 
+	// cerr << "point: ";
+
 	if (objectHit.ind == -1)
 	{
 		//not in shadow
@@ -523,10 +537,12 @@ int isDirectionalNotInShadow(int lightIndex, int indexOfMinT) {
 	Intersection objectHit = Intersection();
 
 	//create ray
-	intersectionPoint = objects[indexOfMinT].point;
+	intersectionPoint = objects[indexOfMinT].point + objects[indexOfMinT].normal * (float)0.00001;
 	direction = directionalLights[lightIndex];
 	normalizedDirection = glm::normalize(direction);
 	Ray ray(intersectionPoint, normalizedDirection);
+
+	// cerr << "directional: ";
 
 	//intersect ray with objects 
 	objectHit = intersect(ray);
@@ -534,10 +550,11 @@ int isDirectionalNotInShadow(int lightIndex, int indexOfMinT) {
 	//didnt hit any objects
 	if (objectHit.ind == -1)
 	{
+		// cerr << "not in shadow" << endl;
 		//not in shadow
 		return 1;
 	}
-
+	// cerr << "in shadow" << endl;
 	//in shadow
 	return 0;
 
