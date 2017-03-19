@@ -82,10 +82,6 @@ void display() {
 
 	vec3 camera = vec3(eye);
 
-	//cerr << "center: " << center.x <<center.y <<center.z << " eye: " << eye.x << eye.y<< eye.z << " up: " << up.x << up.y<< up.z<< endl;
-
-	//cerr << "u: " << _u.x <<_u.y <<_u.z << " v: " << _v.x << _v.y<< _v.z << " w: " << _w.x << _w.y<< _w.z<< endl;
-
     rayTrace(camera);
 }
 
@@ -106,17 +102,14 @@ void rayTrace(vec3 camera) {
 	{
 		for (float x = 0.5; x < w; ++x)
 		{
-			// if(x != (float)w / 2.0 - 0.5){
-			// 	continue;
-			// }
 			float fovx, beta, alpha;
 			vec3 direction, foundColor;
 			Intersection hit;
 
-			// float x = w/(float)2.0;
-			// float y = h/(float)2.0;
-
-
+			if (x < 160 && x > 165)
+			{
+				continue;
+			}
 
 			//generate weights
 			fovx = 2.0 * (atan(tan(fovy/2.0) * (float)w/h));
@@ -147,10 +140,16 @@ void rayTrace(vec3 camera) {
 	}
 
 
-
+	if (nameSpecified)
+	{
 		if(FreeImage_Save(FIF_PNG, bitmap, fileName, 0)){
-			cout << "Image successfully saved in filename" << endl;
+			cout << "Image successfully saved in " << fileName << endl;
 		}
+	} else {
+		if(FreeImage_Save(FIF_PNG, bitmap, "raytrace.png", 0)){
+			cout << "Image successfully saved in raytrace.png" << endl;
+		}
+	}
 
 	//housekeeping
 	FreeImage_DeInitialise();
