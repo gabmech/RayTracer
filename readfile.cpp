@@ -80,6 +80,7 @@ void readfile(const char* filename)
     stack <mat4> transfstack; 
     transfstack.push(mat4(1.0));  // identity
 
+        nameSpecified = false;
 
         //default Values of attenuation
         attenuation[0] = 1;
@@ -197,6 +198,7 @@ void readfile(const char* filename)
         }
         else if (cmd == "output")
         {
+          nameSpecified = true;
           s >> fileName;
         }
         else if (cmd == "maxdepth"){

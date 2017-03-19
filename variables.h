@@ -42,6 +42,7 @@ static enum {view, translate, scale} transop ; // which operation to transform
 enum shape {sphere, tri} ;
 EXTERN float sx, sy ; // the scale in x and y 
 EXTERN float tx, ty ; // the translation in x and y
+EXTERN bool nameSpecified;
 
 // Lighting parameter array, similar to that in the fragment shader
 const int numLights = 10 ; 
